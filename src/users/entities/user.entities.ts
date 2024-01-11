@@ -19,10 +19,10 @@ export class User {
     @UpdateDateColumn()
     updateAt: Date;
 
-    @Column()
+    @Column({ unique: true })
     email: string;
 
-    @Column()
+    @Column({ unique: true })
     phone: string;
 
     @Column()
