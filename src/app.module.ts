@@ -3,7 +3,10 @@ import {AppController} from './app.controller';
 import {AppService} from './app.service';
 import {ConfigModule, ConfigService} from "@nestjs/config";
 import {TypeOrmModule} from "@nestjs/typeorm";
-import { TaskModule } from './task/task.module';
+import {TaskModule} from './task/task.module';
+import {UsersModule} from "./users/users.module";
+import { AuthModule } from './auth/auth.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
     imports: [
@@ -17,12 +20,15 @@ import { TaskModule } from './task/task.module';
                 username: configService.get('DB_USERNAME'),
                 password: configService.get('DB_PASSWORD'),
                 database: configService.get('DB_NAME'),
-                synchronize: true,
                 entities: [__dirname + '/**/*.entity{.ts,.js}'],
+                synchronize: true,
             }),
             inject: [ConfigService],
         }),
-        TaskModule
+        TaskModule,
+        UsersModule,
+        AuthModule,
+        CategoriesModule
     ],
     controllers: [AppController],
     providers: [AppService],

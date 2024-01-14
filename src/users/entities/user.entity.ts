@@ -1,12 +1,6 @@
 import {Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
-import {Order} from "../../orders/entities/order.entities";
+import {Order} from "../../orders/entities/order.entity";
 
-enum UserRole {
-    ADMIN = "admin",
-    MANEGER = "manager",
-    CONSULTANT = "consultant",
-    USER = "user",
-}
 
 @Entity()
 export class User {
@@ -22,7 +16,7 @@ export class User {
     @Column({ unique: true })
     email: string;
 
-    @Column({ unique: true })
+    @Column({ unique: true, nullable: true })
     phone: string;
 
     @Column()
@@ -31,11 +25,7 @@ export class User {
     @Column()
     name: string;
 
-    @Column({
-        type: "enum",
-        enum: UserRole,
-        default: UserRole.USER
-    })
+    @Column()
     role: string;
 
     @OneToMany(() => Order, (order) => order.user, {onDelete: "NO ACTION"})
