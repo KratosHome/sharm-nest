@@ -1,6 +1,21 @@
-import {Body, Controller, Get, Param, Post, UsePipes, ValidationPipe} from "@nestjs/common";
+import {
+    Body,
+    Controller,
+    Get,
+    Param,
+    Post,
+    Query,
+    Req,
+    SetMetadata,
+    UseGuards,
+    UsePipes,
+    ValidationPipe
+} from "@nestjs/common";
 import {UsersService} from "./users.service";
 import {CreateUserDto} from "./dto/create-user.dto";
+import {JwtStrategy} from "../auth/strategies/jwt.strategy";
+import {RolesGuard} from "../guards/roles.guard";
+import {JwtAuthGuard} from "../auth/gurds/jwt-auth.guard";
 
 
 @Controller('users')
@@ -15,13 +30,10 @@ export class UsersController {
     }
 
     @Get("/")
-    findAll() {
-        return this.usersService.findAll();
-    }
-
-    @Get(":id")
-    gerBayId(@Param('id') id: string) {
-        return this.usersService.findById(+id);
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @SetMetadata('roles', ['admin', 'user'])
+    findAll(@Query("page") page: number, @Query("limit") limit: number) {
+        return this.usersService.findAll(page, limit)
     }
 
 

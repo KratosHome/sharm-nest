@@ -28,7 +28,7 @@ export class UsersService {
             phone: createUserDto.phone,
             //      address: createUserDto.address,
             //  city: createUserDto.city,
-            role: createUserDto.role,
+            role: 'user',
         });
 
         const token = this.jwtService.sign({id: user.id, email: user.email, role: user.role});
@@ -41,13 +41,25 @@ export class UsersService {
         return await this.userRepository.findOne({where: {email: email}});
     }
 
-    findAll() {
-        return `This action returns all users`;
+   async findAll(page: number, limit: number) {
+        const users = await this.userRepository.find({
+            order: {
+                createdAt: "DESC",
+            },
+            take: limit,
+            skip: (page - 1) * limit,
+        });
+
+        const count = await this.userRepository.count();
+
+        return {
+            data: users,
+            total: count,
+            currentPage: page,
+            totalPages: Math.ceil(count / limit),
+        };
     }
 
-    findById(id: number) {
-        return `This action returns user with id ${id}`;
-    }
 
 
 }

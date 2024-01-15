@@ -1,4 +1,4 @@
-import {IsEmail, IsIn, MinLength} from "class-validator";
+import {IsEmail, MinLength} from "class-validator";
 
 export class CreateUserDto {
     name: string;
@@ -10,6 +10,4 @@ export class CreateUserDto {
     @IsEmail()
     email: string;
 
-    @IsIn(['admin', 'manager', 'consultant', 'user'], { message: "Role is not correct" })
-    role: string;
 }
