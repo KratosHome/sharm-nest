@@ -5,6 +5,8 @@ import {Repository} from "typeorm";
 import {CreateUserDto} from "./dto/create-user.dto";
 import * as argon2 from "argon2";
 import {JwtService} from "@nestjs/jwt";
+import {UpdateUserDto} from "./dto/update-user.dto";
+import {UpdateRoleUserDto} from "./dto/update-role-user.dto";
 
 @Injectable()
 export class UsersService {
@@ -17,31 +19,33 @@ export class UsersService {
 
     async create(createUserDto: CreateUserDto) {
         const existUser = await this.userRepository.findOne({where: {email: createUserDto.email}})
-        if (existUser) {
-            throw new BadRequestException("User already exist")
-        }
+        if (existUser) throw new BadRequestException("User already exist")
+
         const user = await this.userRepository.save({
             email: createUserDto.email,
             password: await argon2.hash(createUserDto.password),
             name: createUserDto.name,
-            //   surname: createUserDto.surname,
             phone: createUserDto.phone,
-            //      address: createUserDto.address,
-            //  city: createUserDto.city,
             role: 'user',
         });
 
         const token = this.jwtService.sign({id: user.id, email: user.email, role: user.role});
+        user.password = undefined;
 
         return {user, token};
     }
-
 
     async findOne(email: string): Promise<User | undefined> {
         return await this.userRepository.findOne({where: {email: email}});
     }
 
-   async findAll(page: number, limit: number) {
+    async findById(id: number, req: any): Promise<User | undefined> {
+        const userToBeDeletedId = req.user.role === "admin" ? id : req.user.id;
+        const updatedUser = await this.userRepository.findOne({where: {id: userToBeDeletedId}});
+        return updatedUser;
+    }
+
+    async findAll(page: number, limit: number) {
         const users = await this.userRepository.find({
             order: {
                 createdAt: "DESC",
@@ -52,14 +56,53 @@ export class UsersService {
 
         const count = await this.userRepository.count();
 
+        const usersWithoutPassword = users.map(user => {
+            const {password, ...userWithoutPassword} = user;
+            return userWithoutPassword;
+        });
+
         return {
-            data: users,
+            data: usersWithoutPassword,
             total: count,
             currentPage: page,
             totalPages: Math.ceil(count / limit),
         };
     }
 
+    async updateUser(userId: number, updateUserDto: UpdateUserDto, req: any): Promise<User> {
+        const userToBeDeletedId = req.user.role === "admin" ? userId : req.user.id;
+        const updatedUser = await this.userRepository.findOne({where: {id: userToBeDeletedId}});
+
+        if (!updatedUser) throw new BadRequestException("User not found")
+
+        await this.userRepository.update(userId, updateUserDto);
+
+        return updatedUser;
+    }
 
 
+    async deleteUser(userId: number, req: any): Promise<User | boolean> {
+        const userToBeDeletedId = req.user.role === "admin" ? userId : req.user.id;
+        const user = await this.userRepository.findOne({where: {id: userToBeDeletedId}});
+
+        if (!user) throw new BadRequestException("User not found")
+
+        user.isDelete = true;
+        user.deleteAt = new Date()
+
+        await this.userRepository.save(user);
+
+        return user
+    }
+
+    async updateRole(updateRoleUserDto: UpdateRoleUserDto, userId: number, req: any): Promise<User | boolean> {
+        const userToBeDeletedId = req.user.role === "admin" ? userId : null;
+        const user = await this.userRepository.findOne({where: {id: userToBeDeletedId}});
+
+        if (!user) throw new BadRequestException("User not found")
+
+        await this.userRepository.save(updateRoleUserDto);
+
+        return user
+    }
 }

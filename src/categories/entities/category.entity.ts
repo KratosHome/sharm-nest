@@ -1,4 +1,5 @@
-import {Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+import {Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+import {Menu} from "../../menu/entities/menu.entity";
 
 @Entity()
 export class Category {
@@ -19,4 +20,7 @@ export class Category {
 
     @Column({unique: true, nullable: true})
     description: string;
+
+    @OneToMany(() => Menu, menu => menu.category)
+    menu: Menu;
 }

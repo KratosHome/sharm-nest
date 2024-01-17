@@ -1,4 +1,12 @@
-import {Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+import {
+    Column,
+    CreateDateColumn,
+    DeleteDateColumn,
+    Entity,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn
+} from "typeorm";
 import {Order} from "../../orders/entities/order.entity";
 
 
@@ -13,17 +21,32 @@ export class User {
     @UpdateDateColumn()
     updateAt: Date;
 
-    @Column({ unique: true })
+    @DeleteDateColumn()
+    deleteAt: Date;
+
+    @Column({default: false})
+    isDelete: boolean;
+
+    @Column({unique: true})
     email: string;
 
-    @Column({ unique: true, nullable: true })
-    phone: string;
+    @Column({default: false})
+    isEmailVerified: boolean;
 
-    @Column()
+    @Column({unique: true, nullable: true})
+    phone: string | null;
+
+    @Column({default: false})
+    isPhoneVerified: boolean;
+
+    @Column({unique: true})
     password: string;
 
-    @Column()
-    name: string;
+    @Column({nullable: true})
+    name: string | null;
+
+    @Column({nullable: true})
+    surname: string | null;
 
     @Column()
     role: string;
@@ -33,4 +56,3 @@ export class User {
 
 }
 
-// visit, order, likes, settings,

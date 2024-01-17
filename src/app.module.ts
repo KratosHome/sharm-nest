@@ -7,6 +7,8 @@ import {TaskModule} from './task/task.module';
 import {UsersModule} from "./users/users.module";
 import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
+import { ProductsModule } from './products/products.module';
+import { MenuModule } from './menu/menu.module';
 
 @Module({
     imports: [
@@ -28,7 +30,9 @@ import { CategoriesModule } from './categories/categories.module';
         TaskModule,
         UsersModule,
         AuthModule,
-        CategoriesModule
+        CategoriesModule,
+        ProductsModule,
+        MenuModule
     ],
     controllers: [AppController],
     providers: [AppService],
