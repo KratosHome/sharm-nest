@@ -6,15 +6,15 @@ import {
     JoinColumn,
     ManyToOne,
     OneToMany, OneToOne,
-    PrimaryGeneratedColumn,
+    PrimaryGeneratedColumn, TreeChildren, TreeParent,
     UpdateDateColumn
 } from "typeorm";
 import {Category} from "../../categories/entities/category.entity";
 
 @Entity()
 export class Menu {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
     @CreateDateColumn()
     createdAt: Date;
@@ -25,10 +25,6 @@ export class Menu {
     @DeleteDateColumn()
     deleteAt: Date;
 
-    @Column({type: 'uuid', nullable: true, unique: true})
-    @Generated('uuid')
-    parentID: string | null;
-
     @Column({unique: true})
     title: string;
 
@@ -38,11 +34,11 @@ export class Menu {
     @Column()
     icons: string;
 
-    @ManyToOne(() => Menu, menu => menu.children)
-    parent: Menu;
-
-    @OneToMany(() => Menu, menu => menu.parent)
+    @TreeChildren()
     children: Menu[];
+
+    @TreeParent()
+    parent: Menu;
 
     @OneToOne(() => Category, category => category.menu)
     @JoinColumn()
