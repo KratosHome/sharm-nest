@@ -5,7 +5,10 @@ import {DocumentBuilder, SwaggerModule} from "@nestjs/swagger";
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     app.setGlobalPrefix("/api")
-    app.enableCors()
+    app.enableCors({
+        origin: 'http://localhost:3001', // замініть на домен вашого фронтенду
+        credentials: true,
+    });
     const config = new DocumentBuilder()
         .setTitle('Sharm Beauty API')
         .setDescription('API for Sharm Beauty')

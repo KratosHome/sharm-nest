@@ -27,6 +27,12 @@ export class User {
     @Column({default: false})
     isDelete: boolean;
 
+    @Column({nullable: true})
+    name: string | null;
+
+    @Column({nullable: true})
+    surname: string | null;
+
     @Column({unique: true})
     email: string;
 
@@ -41,12 +47,6 @@ export class User {
 
     @Column({unique: true})
     password: string;
-
-    @Column({nullable: true})
-    name: string | null;
-
-    @Column({nullable: true})
-    surname: string | null;
 
     @Column()
     role: string;

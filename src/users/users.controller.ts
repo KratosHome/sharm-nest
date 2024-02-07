@@ -43,9 +43,9 @@ export class UsersController {
 
     @Get("")
     @ApiOperation({summary: 'Get all users: rol: admin'})
-    @UsePipes(new ValidationPipe())
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @SetMetadata('roles', ['admin'])
+  //  @UsePipes(new ValidationPipe())
+  //  @UseGuards(JwtAuthGuard, RolesGuard)
+   // @SetMetadata('roles', ['admin'])
     findAll(@Query("page") page: number, @Query("limit") limit: number) {
         return this.usersService.findAll(page, limit)
     }
