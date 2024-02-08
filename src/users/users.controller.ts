@@ -1,6 +1,6 @@
 import {
     Body,
-    Controller,
+    Controller, Delete,
     Get, Param,
     Post,
     Query,
@@ -59,10 +59,10 @@ export class UsersController {
         return this.usersService.updateUser(+id, updateUserDto, req)
     }
 
-    @Get("delete")
-    @ApiOperation({summary: 'delete user profile = admin can delete any user'})
-    @UsePipes(new ValidationPipe())
-    @UseGuards(JwtAuthGuard)
+    @Delete(":id")
+   // @ApiOperation({summary: 'delete user profile = admin can delete any user'})
+   // @UsePipes(new ValidationPipe())
+  //  @UseGuards(JwtAuthGuard)
     deleteUser(@Param('id') id: string, @Req() req: Request) {
         return this.usersService.deleteUser(+id, req)
     }
