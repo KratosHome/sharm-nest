@@ -83,7 +83,7 @@ export class UsersService {
 
 
     async deleteUser(userId: number, req: any): Promise<User | boolean> {
-      //  const userToBeDeletedId = req.user.role === "admin" ? userId : req.user.id;
+        //  const userToBeDeletedId = req.user.role === "admin" ? userId : req.user.id;
         const user = await this.userRepository.findOne({where: {id: userId}});
 
         if (!user) throw new BadRequestException("User not found")
@@ -94,12 +94,14 @@ export class UsersService {
     }
 
     async updateRole(updateRoleUserDto: UpdateRoleUserDto, userId: number, req: any): Promise<User | boolean> {
-        const userToBeDeletedId = req.user.role === "admin" ? userId : null;
-        const user = await this.userRepository.findOne({where: {id: userToBeDeletedId}});
+        // const userToBeDeletedId = req.user.role === "admin" ? userId : null;
+        const user = await this.userRepository.findOne({where: {id: userId}});
 
         if (!user) throw new BadRequestException("User not found")
 
-        await this.userRepository.save(updateRoleUserDto);
+        user.role = updateRoleUserDto.role;
+
+        await this.userRepository.save(user);
 
         return user
     }

@@ -67,9 +67,9 @@ export class UsersController {
         return this.usersService.deleteUser(+id, req)
     }
 
-    @Get("update-role")
-    @UsePipes(new ValidationPipe())
-    @UseGuards(JwtAuthGuard)
+    @Post('update-role/:id')
+    // @UsePipes(new ValidationPipe())
+    // @UseGuards(JwtAuthGuard)
     updateRoleUser(@Param('id') id: string, @Body() updateRoleUserDto: UpdateRoleUserDto, @Req() req: Request) {
         return this.usersService.updateRole(updateRoleUserDto, +id, req)
     }
