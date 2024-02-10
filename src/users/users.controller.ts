@@ -43,9 +43,9 @@ export class UsersController {
 
     @Get("")
     @ApiOperation({summary: 'Get all users: rol: admin'})
-  //  @UsePipes(new ValidationPipe())
-  //  @UseGuards(JwtAuthGuard, RolesGuard)
-   // @SetMetadata('roles', ['admin'])
+    @UsePipes(new ValidationPipe())
+    @UseGuards(JwtAuthGuard)
+    @SetMetadata('roles', ['admin'])
     findAll(@Query("page") page: number, @Query("limit") limit: number) {
         return this.usersService.findAll(page, limit)
     }
@@ -60,9 +60,9 @@ export class UsersController {
     }
 
     @Delete(":id")
-   // @ApiOperation({summary: 'delete user profile = admin can delete any user'})
-   // @UsePipes(new ValidationPipe())
-  //  @UseGuards(JwtAuthGuard)
+    // @ApiOperation({summary: 'delete user profile = admin can delete any user'})
+    // @UsePipes(new ValidationPipe())
+    //  @UseGuards(JwtAuthGuard)
     deleteUser(@Param('id') id: string, @Req() req: Request) {
         return this.usersService.deleteUser(+id, req)
     }
