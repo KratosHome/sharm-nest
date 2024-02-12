@@ -1,7 +1,7 @@
 import {Injectable, BadRequestException} from "@nestjs/common";
 import {InjectRepository} from "@nestjs/typeorm";
 import {User} from "./entities/user.entity";
-import {Repository} from "typeorm";
+import {ILike, Repository} from "typeorm";
 import {CreateUserDto} from "./dto/create-user.dto";
 import * as argon2 from "argon2";
 import {JwtService} from "@nestjs/jwt";
@@ -105,20 +105,21 @@ export class UsersService {
 
         return user
     }
+
+
+    async searchByField(field: string, value: string): Promise<any[]> {
+        const validFields = ['name', 'surname', 'email', 'phone', 'role'];
+        if (!validFields.includes(field)) {
+            throw new BadRequestException('Invalid search field');
+        }
+
+        const whereCondition = {};
+        whereCondition[field] = ILike(`%${value}%`);
+
+        const users = await this.userRepository.find({ where: whereCondition });
+
+        return users;
+    }
+
 }
 
-/*
-    async deleteUser(userId: number, req: any): Promise<User | boolean> {
-        const userToBeDeletedId = req.user.role === "admin" ? userId : req.user.id;
-        const user = await this.userRepository.findOne({where: {id: userToBeDeletedId}});
-
-        if (!user) throw new BadRequestException("User not found")
-
-        user.isDelete = true;
-        user.deleteAt = new Date()
-
-        await this.userRepository.save(user);
-
-        return user
-    }
- */

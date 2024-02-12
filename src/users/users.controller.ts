@@ -32,6 +32,8 @@ export class UsersController {
         return this.usersService.create(createUserDto)
     }
 
+
+    // not tested
     @Get("profile/:id")
     @ApiOperation({summary: 'get user profile = admin can get any user'})
     @ApiParam({name: 'id', description: 'ID of the user'})
@@ -50,6 +52,7 @@ export class UsersController {
         return this.usersService.findAll(page, limit)
     }
 
+    // not tested
     @Post("update")
     @ApiOperation({summary: 'update user profile = admin can update any user'})
     @ApiBody({type: UpdateUserDto, description: 'Update user by id - front'})
@@ -60,18 +63,26 @@ export class UsersController {
     }
 
     @Delete(":id")
-    // @ApiOperation({summary: 'delete user profile = admin can delete any user'})
-    // @UsePipes(new ValidationPipe())
-    //  @UseGuards(JwtAuthGuard)
+    @ApiOperation({summary: 'delete user profile = admin can delete any user'})
+    @UsePipes(new ValidationPipe())
+    @UseGuards(JwtAuthGuard)
     deleteUser(@Param('id') id: string, @Req() req: Request) {
         return this.usersService.deleteUser(+id, req)
     }
 
     @Post('update-role/:id')
-    // @UsePipes(new ValidationPipe())
-    // @UseGuards(JwtAuthGuard)
+    @UsePipes(new ValidationPipe())
+    @UseGuards(JwtAuthGuard)
     updateRoleUser(@Param('id') id: string, @Body() updateRoleUserDto: UpdateRoleUserDto, @Req() req: Request) {
         return this.usersService.updateRole(updateRoleUserDto, +id, req)
     }
+
+    @Get('search')
+    @ApiOperation({summary: 'Search users by field'})
+    @UseGuards(JwtAuthGuard)
+    async searchUsers(@Query('field') field: string, @Query('value') value: string): Promise<any[]> {
+        return this.usersService.searchByField(field, value);
+    }
+
 
 }
