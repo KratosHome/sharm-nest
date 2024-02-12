@@ -65,21 +65,24 @@ export class UsersController {
     @Delete(":id")
     @ApiOperation({summary: 'delete user profile = admin can delete any user'})
     @UsePipes(new ValidationPipe())
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @SetMetadata('roles', ['admin'])
     deleteUser(@Param('id') id: string, @Req() req: Request) {
         return this.usersService.deleteUser(+id, req)
     }
 
     @Post('update-role/:id')
     @UsePipes(new ValidationPipe())
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @SetMetadata('roles', ['admin'])
     updateRoleUser(@Param('id') id: string, @Body() updateRoleUserDto: UpdateRoleUserDto, @Req() req: Request) {
         return this.usersService.updateRole(updateRoleUserDto, +id, req)
     }
 
     @Get('search')
     @ApiOperation({summary: 'Search users by field'})
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @SetMetadata('roles', ['admin'])
     async searchUsers(@Query('field') field: string, @Query('value') value: string): Promise<any[]> {
         return this.usersService.searchByField(field, value);
     }
