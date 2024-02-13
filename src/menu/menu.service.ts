@@ -104,8 +104,8 @@ export class MenuService {
             throw new BadRequestException(`Category with id ${categoryId} not found`);
         }
 
-        // Повертаємо тільки дочірні категорії
-        return category.children;
+        // category.children;
+        return category;
     }
 
 

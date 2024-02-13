@@ -34,8 +34,10 @@ export class Menu {
     @Column()
     icons: string;
 
+    /*
     @TreeChildren()
     children: Menu[];
+     */
 
     @TreeParent()
     parent: Menu;

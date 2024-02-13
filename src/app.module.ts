@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { MenuModule } from './menu/menu.module';
+import * as fs from "fs";
 
 @Module({
     imports: [
@@ -24,6 +25,10 @@ import { MenuModule } from './menu/menu.module';
                 database: configService.get('DB_NAME'),
                 entities: [__dirname + '/**/*.entity{.ts,.js}'],
                 synchronize: true,
+                ssl: {
+                    rejectUnauthorized: false,
+                    ca: fs.readFileSync('./eu-west-2-bundle.p7b').toString()
+                },
             }),
             inject: [ConfigService],
         }),
