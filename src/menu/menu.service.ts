@@ -8,143 +8,77 @@ import {CreateMenuDto} from "./dto/create-menu.dto";
 
 @Injectable()
 export class MenuService {
-
     constructor(
         @InjectRepository(Menu) private menuRepository: Repository<Menu>,
         private readonly jwtService: JwtService,
     ) {
     }
 
-    async create(createMenuDto: CreateMenuDto, parentId?: string) {
-        const menu = this.menuRepository.create({
-            ...createMenuDto,
-        });
+    async create(createMenuDto: CreateMenuDto) {
+        const menu = this.menuRepository.create({...createMenuDto});
 
-        if (parentId) {
-            const parentMenu = await this.menuRepository.findOne({where: {id: parentId}});
-            if (!parentMenu) throw new BadRequestException("Parent menu not found");
-            menu.parent = parentMenu;
+        if (createMenuDto.parentId) {
+            menu.parent = await this.menuRepository.findOne({where: {id: createMenuDto.parentId}});
         }
 
         return await this.menuRepository.save(menu);
     }
 
-
     async findAll(page: number, limit: number) {
-        // Функція для рекурсивного побудови відносин
-        const buildRelations = (path = 'children', depth = 5) => {
-            if (depth === 0) return [];
-            const nextPath = `${path}.children`;
-            return [path, `${path}.category`, ...buildRelations(nextPath, depth - 1)];
-        };
+        const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
+        const menus: any = await treeRepository.findTrees();
 
-        // Використання рекурсивної функції для створення масиву відносин
-        const relations = buildRelations();
-
-        const [result, total] = await this.menuRepository.findAndCount({
-            relations: relations,
-            order: {createdAt: 'DESC'},
-            take: limit,
-            skip: (page - 1) * limit,
-        });
-
-        return {
-            data: result,
-            total,
-            currentPage: page,
-            totalPages: Math.ceil(total / limit),
-        };
+        return menus;
     }
 
-
     async findOne(id: string) {
-        const menu = await this.menuRepository.findOne({
-            where: {id: id},
-            relations: ["children", "category"],
-        });
+        const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
+        const menu = await this.menuRepository.findOne({where: {id}});
 
-        if (!menu) {
-            throw new BadRequestException(`Menu with id ${id} not found`);
-        }
+        if (!menu) throw new Error('Menu not found');
+
+        const menuWithChildren = await treeRepository.findDescendantsTree(menu);
+
+        return menuWithChildren;
+    }
+
+    async moveItem(nodeId: string, parentId: string) {
+        const node = await this.menuRepository.findOne({where: {id: nodeId}});
+        if (!node) throw new Error('Cannot find node to move');
+        const newParent = await this.menuRepository.findOne({where: {id: parentId}});
+        if (!newParent) throw new Error('Cannot find new parent node');
+
+        node.parent = newParent;
+
+        await this.menuRepository.save(node);
+
+        return node;
+    }
+
+    async updateItem(id: string, updateMenuDto: UpdateMenuDto): Promise<Menu> {
+        let menu = await this.menuRepository.findOne({where: {id}});
+        if (!menu) throw new NotFoundException(`Menu item with ID ${id} not found`);
+
+        menu = this.menuRepository.merge(menu, updateMenuDto);
+
+        await this.menuRepository.save(menu);
 
         return menu;
     }
 
-    async moveItem(itemId: string, targetParentId?: string) {
-        // Знаходження об'єкта, який потрібно перемістити
-        const itemToMove = await this.menuRepository.findOne({
-            where: {id: itemId},
-            relations: ["children", "category"],
-        });
-        if (!itemToMove) throw new NotFoundException('Item to move not found');
 
-        // Якщо targetParentId надано, знаходимо цільовий батьківський об'єкт
-        let targetParent = await this.menuRepository.findOne({
-            where: {id: targetParentId},
-            relations: ["children", "category"],
-        });
-        if (!targetParent) throw new NotFoundException('Target parent not found');
 
-        if (targetParentId && itemToMove) {
-            await this.menuRepository.remove(itemToMove);
-        }
+    async remove(id: string): Promise<boolean> {
+        const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
+        const target = await this.menuRepository.findOne({where: {id}});
+        if (!target) throw new NotFoundException(`Menu with ID ${id} not found`);
 
-        itemToMove.parent = targetParent;
-        return await this.menuRepository.save(itemToMove);
+        const descendants = await treeRepository.findDescendants(target);
+
+        await treeRepository.remove(descendants);
+
+        return true
     }
 
-
-    async findSubcategories(categoryId: string) {
-        const category = await this.menuRepository.findOne({
-            where: {id: categoryId},
-            relations: ["children"]
-        });
-
-        if (!category) {
-            throw new BadRequestException(`Category with id ${categoryId} not found`);
-        }
-
-        // category.children;
-        return category;
-    }
-
-
-    async updat2e(id: string, updateMenuDto: UpdateMenuDto): Promise<Menu> {
-        const menu = await this.menuRepository.findOne({
-            where: {id: id},
-            relations: ["children"]
-        });
-        if (!menu) {
-            throw new BadRequestException(`Menu with id ${id} not found`);
-        }
-
-        // Оновлення властивостей меню
-        Object.assign(menu, updateMenuDto);
-        return await this.menuRepository.save(menu);
-    }
-
-    async moveMenu(id: string, newParentId: string): Promise<Menu> {
-        const menu = await this.menuRepository.findOne({
-            where: {id: id},
-            relations: ["children"]
-        });
-        if (!menu) {
-            throw new BadRequestException(`Menu with id ${id} not found`);
-        }
-
-        if (newParentId) {
-            const newParent = await this.menuRepository.findOne(({
-                where: {id: newParentId},
-            }));
-            if (!newParent) {
-                throw new BadRequestException(`New parent menu with id ${newParentId} not found`);
-            }
-            menu.parent = newParent;
-        } else {
-            menu.parent = null;
-        }
-
-        return await this.menuRepository.save(menu);
-    }
 
 }

@@ -2,6 +2,7 @@ import {Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, UsePipes,
 import {MenuService} from './menu.service';
 import {CreateMenuDto} from './dto/create-menu.dto';
 import {ApiTags} from "@nestjs/swagger";
+import {UpdateMenuDto} from "./dto/update-menu.dto";
 
 @ApiTags('menu')
 @Controller('menu')
@@ -16,9 +17,8 @@ export class MenuController {
     }
 
     @Post(':id')
-    @UsePipes(new ValidationPipe())
-    createWithParentId(@Body() createMenuDto: CreateMenuDto, @Param('id') parentId: string) {
-        return this.menuService.create(createMenuDto, parentId);
+    update(@Param('id') id: string, @Body() updateMenuDto: UpdateMenuDto) {
+        return this.menuService.updateItem(id, updateMenuDto);
     }
 
     @Get()
@@ -27,17 +27,28 @@ export class MenuController {
         return this.menuService.findAll(page, limit);
     }
 
-    @Patch('move/:itemId')
+
+    @Get(':id')
     @UsePipes(new ValidationPipe())
-    moveItem(@Param('itemId') itemId: string, @Body('targetParentId') targetParentId: string
-    ) {
-        return this.menuService.moveItem(itemId, targetParentId);
+    findOne(@Param('id') id: string) {
+        return this.menuService.findOne(id);
     }
+
+    @Patch('move')
+    @UsePipes(new ValidationPipe())
+    moveItem(
+        @Body('nodeId') nodeId: string,
+        @Body('parentId') parentId: string
+    ) {
+        return this.menuService.moveItem(nodeId, parentId);
+    }
+
 
     @Delete(':id')
     @UsePipes(new ValidationPipe())
     remove(@Param('id') id: string) {
-        return "this.menuService.remove(id);"
+        return this.menuService.remove(id)
     }
+
 
 }

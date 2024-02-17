@@ -1,4 +1,5 @@
 import {
+    BaseEntity,
     BeforeInsert,
     Column,
     CreateDateColumn, DeleteDateColumn,
@@ -6,13 +7,14 @@ import {
     JoinColumn,
     ManyToOne,
     OneToMany, OneToOne,
-    PrimaryGeneratedColumn, TreeChildren, TreeParent,
+    PrimaryGeneratedColumn, Tree, TreeChildren, TreeParent,
     UpdateDateColumn
 } from "typeorm";
 import {Category} from "../../categories/entities/category.entity";
 
 @Entity()
-export class Menu {
+@Tree("nested-set")
+export class Menu extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
@@ -26,7 +28,7 @@ export class Menu {
     deleteAt: Date;
 
     @Column({unique: true})
-    title: string;
+    name: string;
 
     @Column({unique: true})
     url: string;
@@ -34,13 +36,11 @@ export class Menu {
     @Column()
     icons: string;
 
-    /*
     @TreeChildren()
     children: Menu[];
-     */
 
     @TreeParent()
-    parent: Menu;
+    parent: Menu
 
     @OneToOne(() => Category, category => category.menu)
     @JoinColumn()

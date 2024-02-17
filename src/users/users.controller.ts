@@ -73,8 +73,8 @@ export class UsersController {
 
     @Post('update-role/:id')
     @UsePipes(new ValidationPipe())
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @SetMetadata('roles', ['admin'])
+  //  @UseGuards(JwtAuthGuard, RolesGuard)
+        // @SetMetadata('roles', ['admin'])
     updateRoleUser(@Param('id') id: string, @Body() updateRoleUserDto: UpdateRoleUserDto, @Req() req: Request) {
         return this.usersService.updateRole(updateRoleUserDto, +id, req)
     }
