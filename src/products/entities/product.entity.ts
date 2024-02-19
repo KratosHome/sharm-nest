@@ -1,42 +1,45 @@
-import {Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class Product {
-    @PrimaryGeneratedColumn({name: "product_id"})
-    id: number;
+  @PrimaryGeneratedColumn({ name: 'product_id' })
+  id: number;
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @CreateDateColumn()
+  createdAt: Date;
 
-    @UpdateDateColumn()
-    updateAt: Date;
+  @UpdateDateColumn()
+  updateAt: Date;
 
-    @Column()
-    title: string;
+  @Column()
+  subTitle: string;
 
-    @Column()
-    subTitle: string;
+  @Column({ nullable: true })
+  sku: string;
 
-    @Column()
-    sku: string;
+  @Column({ nullable: true })
+  prise: number;
 
-    @Column()
-    prise: number;
+  @Column({ nullable: true })
+  oldPrise: number;
 
-    @Column()
-    oldPrise: number;
+  @Column({ nullable: true })
+  count: number;
 
-    @Column()
-    count: number;
+  @Column({ nullable: true })
+  description: number;
 
-    @Column()
-    description: number;
+  @Column({ nullable: true })
+  visited: number;
 
-    @Column()
-    visited: number;
-
-    @Column()
-    orders: number;
+  @Column({ nullable: true })
+  orders: number;
 }
 
 // revivers, prudcut vaeiant, характеристики, нещодавно відвідували, з цим товаром купують
