@@ -1,20 +1,11 @@
 import {
     BaseEntity,
-    BeforeInsert,
     Column,
-    CreateDateColumn, DeleteDateColumn,
-    Entity, Generated,
-    JoinColumn,
+    Entity,
     ManyToOne,
-    OneToMany,
-    OneToOne,
     PrimaryGeneratedColumn,
     Tree,
-    TreeChildren,
-    TreeParent,
-    UpdateDateColumn
 } from "typeorm";
-import {Category} from "../../categories/entities/category.entity";
 import {Menu} from "./menu.entity";
 
 @Entity()
@@ -28,9 +19,6 @@ export class MenuTranslationEntity extends BaseEntity {
 
     @Column({unique: true})
     url: string;
-
-    @Column()
-    icons: string;
 
     @Column()
     lang: string;

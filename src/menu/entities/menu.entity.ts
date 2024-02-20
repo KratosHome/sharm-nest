@@ -1,11 +1,9 @@
 import {
     BaseEntity,
-    BeforeInsert,
     Column,
     CreateDateColumn, DeleteDateColumn,
     Entity,
     JoinColumn,
-    ManyToOne,
     OneToMany, OneToOne,
     PrimaryGeneratedColumn, Tree, TreeChildren, TreeParent,
     UpdateDateColumn
@@ -29,12 +27,6 @@ export class Menu extends BaseEntity {
     @DeleteDateColumn()
     deleteAt: Date;
 
-    @Column({ unique: true, nullable: true }) // test
-    name: string | null;
-
-    @Column({unique: true})
-    url: string;
-
     @Column()
     icons: string;
 
@@ -48,6 +40,7 @@ export class Menu extends BaseEntity {
     @JoinColumn()
     category: Category;
 
+
     @OneToMany(() => MenuTranslationEntity, (translation) => translation.menu)
-    translations: MenuTranslationEntity;
+    translations: MenuTranslationEntity[];
 }
