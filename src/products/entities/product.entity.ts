@@ -1,24 +1,10 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { ProductLocalization } from './product-localization.entity';
 
 @Entity()
 export class Product {
-  @PrimaryGeneratedColumn({ name: 'product_id' })
+  @PrimaryGeneratedColumn()
   id: number;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updateAt: Date;
-
-  @Column()
-  subTitle: string;
 
   @Column({ nullable: true })
   sku: string;
@@ -35,11 +21,17 @@ export class Product {
   @Column({ nullable: true })
   description: number;
 
-  @Column({ nullable: true })
+  @Column()
   visited: number;
 
   @Column({ nullable: true })
   orders: number;
+
+  @OneToMany(
+    () => ProductLocalization,
+    (productLocalization) => productLocalization.product,
+  )
+  localizations: ProductLocalization[];
 }
 
 // revivers, prudcut vaeiant, характеристики, нещодавно відвідували, з цим товаром купують

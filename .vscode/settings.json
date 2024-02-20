@@ -1,0 +1,14 @@
+{
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "sharm",
+      "database": "sharm_db_first",
+      "username": "postgres",
+      "password": "postgres"
+    }
+  ]
+}

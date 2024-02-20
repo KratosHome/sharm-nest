@@ -1,36 +1,20 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Product } from './product.entity';
-
-export enum Languages {
-  ENGLISH = 'en',
-  UKRAINIAN = 'ua',
-}
+import { Languages } from 'src/languages/languages.enum';
 
 @Entity()
 export class ProductLocalization {
-  @PrimaryGeneratedColumn({ name: 'product_id' })
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => Product)
-  @JoinColumn()
-  product: Product;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updateAt: Date;
-
-  @Column()
+  @Column({ nullable: true })
   name: string;
+
+  @Column({ nullable: true })
+  subTitle: string;
+
+  @Column({ nullable: true })
+  description: string;
 
   @Column({
     type: 'enum',
@@ -38,4 +22,7 @@ export class ProductLocalization {
     default: Languages.UKRAINIAN,
   })
   language: Languages;
+
+  @ManyToOne(() => Product, (product) => product.localizations)
+  product: Product;
 }

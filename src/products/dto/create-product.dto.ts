@@ -1,8 +1,6 @@
-import { Languages } from '../entities/product-localization.entity';
+import { CreateProductLocalizationDto } from './create-product-localization.dto';
 
 export class CreateProductDto {
-  readonly name: string;
-  readonly subTitle: string;
-  readonly description: number;
-  readonly language: Languages;
+  readonly visited: number;
+  readonly localizations: CreateProductLocalizationDto[];
 }
