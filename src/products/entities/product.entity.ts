@@ -10,42 +10,42 @@ import {
 
 @Entity()
 export class Product {
-   @PrimaryGeneratedColumn()
-   id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-   @CreateDateColumn()
-   createdAt: Date;
+  @CreateDateColumn()
+  createdAt: Date;
 
-   @UpdateDateColumn()
-   updateAt: Date;
+  @UpdateDateColumn()
+  updateAt: Date;
 
-   // @Column()
-   // title: string;
+  @Column()
+  title: string;
 
-   @Column()
-   subTitle: string;
+  @Column()
+  subTitle: string;
 
-//    @Column()
-//    sku: string;
+  @Column({ nullable: true })
+  sku: string;
 
-   @Column({ default: 0 })
-   price: number;
+  @Column({ default: 0 })
+  price: number;
 
-   @Column({ default: 0 })
-   oldPrice: number;
+  @Column({ default: 0 })
+  oldPrice: number;
 
-   @Column({ default: 0 })
-   count: number;
+  @Column({ default: 0 })
+  count: number;
 
-//    @Column()
-//    description: string;
+  @Column({ nullable: true })
+  description: string;
 
-   @Column({ default: 0 })
-   visited: number;
+  @Column({ default: 0 })
+  visited: number;
 
-   @OneToMany(() => Order, order => order.user)
-//    @JoinColumn({ name: 'user_id' })
-   orders: Order[];
+  @OneToMany(() => Order, (order) => order.user)
+  //    @JoinColumn({ name: 'user_id' })
+  orders: Order[];
 }
 
 // revivers, prudcut vaeiant, характеристики, нещодавно відвідували, з цим товаром купують

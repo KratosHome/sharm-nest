@@ -1,22 +1,21 @@
-import {IsNotEmpty, IsOptional} from "class-validator";
-import { Category } from "../entities/category.entity";
-import { ApiProperty } from "@nestjs/swagger";
+import { IsNotEmpty, IsOptional } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCategoryDto {
-   @ApiProperty()
-   @IsNotEmpty()
-   title: string;
+  @ApiProperty()
+  @IsNotEmpty()
+  title: string;
 
-   @ApiProperty()
-   @IsNotEmpty()
-   url: string;
+  @ApiProperty()
+  @IsNotEmpty()
+  url: string;
 
-   @ApiProperty()
-   @IsOptional()
-   description: string;
+  @ApiProperty()
+  @IsOptional()
+  description: string;
 
-   @ApiProperty()
-   @IsNotEmpty()
-   // parent: number;
-   parent: Category;
+  @ApiProperty()
+  @IsNotEmpty()
+  // parent: number;
+  parentId: number;
 }
