@@ -1,42 +1,51 @@
-import {Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+import { Order } from 'src/orders/entities/order.entity';
+import {
+   Column,
+   CreateDateColumn,
+   Entity,
+   OneToMany,
+   PrimaryGeneratedColumn,
+   UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class Product {
-    @PrimaryGeneratedColumn({name: "product_id"})
-    id: number;
+   @PrimaryGeneratedColumn()
+   id: number;
 
-    @CreateDateColumn()
-    createdAt: Date;
+   @CreateDateColumn()
+   createdAt: Date;
 
-    @UpdateDateColumn()
-    updateAt: Date;
+   @UpdateDateColumn()
+   updateAt: Date;
 
-    @Column()
-    title: string;
+   // @Column()
+   // title: string;
 
-    @Column()
-    subTitle: string;
+   @Column()
+   subTitle: string;
 
-    @Column()
-    sku: string;
+//    @Column()
+//    sku: string;
 
-    @Column()
-    prise: number;
+   @Column({ default: 0 })
+   price: number;
 
-    @Column()
-    oldPrise: number;
+   @Column({ default: 0 })
+   oldPrice: number;
 
-    @Column()
-    count: number;
+   @Column({ default: 0 })
+   count: number;
 
-    @Column()
-    description: number;
+//    @Column()
+//    description: string;
 
-    @Column()
-    visited: number;
+   @Column({ default: 0 })
+   visited: number;
 
-    @Column()
-    orders: number;
+   @OneToMany(() => Order, order => order.user)
+//    @JoinColumn({ name: 'user_id' })
+   orders: Order[];
 }
 
 // revivers, prudcut vaeiant, характеристики, нещодавно відвідували, з цим товаром купують

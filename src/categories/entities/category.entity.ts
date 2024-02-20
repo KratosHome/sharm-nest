@@ -1,26 +1,51 @@
-import {Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
-import {Menu} from "../../menu/entities/menu.entity";
+import {
+   Column,
+   CreateDateColumn,
+   Entity,
+   PrimaryGeneratedColumn,
+   Tree,
+   TreeChildren,
+   TreeParent,
+   UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
+@Tree('nested-set')
 export class Category {
-    @PrimaryGeneratedColumn()
-    id: number;
+   @PrimaryGeneratedColumn()
+   id: number;
 
-    @CreateDateColumn()
-    createdAt: Date;
+   @Column({ unique: true })
+   title: string;
 
-    @UpdateDateColumn()
-    updateAt: Date;
+   @Column({ unique: true })
+   url: string;
 
-    @Column({unique: true})
-    title: string;
+   // @Column({ nullable: true })
+   // parent: number;
 
-    @Column({unique: true})
-    url: string;
+   // @Column({ unique: true, nullable: true })
+   // description: string;
 
-    @Column({unique: true, nullable: true})
-    description: string;
+   @CreateDateColumn()
+   createdAt: Date;
 
-    @OneToMany(() => Menu, menu => menu.category)
-    menu: Menu;
+   @UpdateDateColumn()
+   updateAt: Date;
+
+   // @HasMany(() => UnitImage, {
+   //    onDelete: 'cascade',
+   //    as: 'images',
+   // })
+
+   // @OneToMany(() => Category, category => category.parent)
+   // children: Category[];
+   // @ManyToOne(() => Category, category => category.children)
+   // @JoinColumn({ name: 'parent' })
+   // parent: Category;
+
+   @TreeChildren()
+   children: Category[];
+   @TreeParent()
+   parent: Category;
 }
