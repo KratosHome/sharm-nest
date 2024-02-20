@@ -1,72 +1,88 @@
-import {BadRequestException, Injectable, NotFoundException} from '@nestjs/common';
-import {CreateCategoryDto} from './dto/create-category.dto';
-import {UpdateCategoryDto} from './dto/update-category.dto';
-import {Repository} from "typeorm";
-import {Category} from "./entities/category.entity";
-import {InjectRepository} from "@nestjs/typeorm";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
+import { EntityManager, Repository } from 'typeorm';
+import { Category } from './entities/category.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { errorHandler } from 'src/helpers/errorHandler';
 
-function checkRequiredFields(dto, requiredFields) {
-    const missingFields = requiredFields.filter(field => !dto[field]);
-    if (missingFields.length > 0) {
-        throw new BadRequestException(`Missing required fields: ${missingFields.join(', ')}`);
-    }
-}
+// function checkRequiredFields(dto, requiredFields: string[]) {
+//    const missingFields = requiredFields.filter(field => !dto[field]);
+//    if (missingFields.length > 0) {
+//       throw new BadRequestException(`Missing required fields: ${missingFields.join(', ')}`);
+//    }
+// }
 
 @Injectable()
 export class CategoriesService {
+  constructor(
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
+    private readonly entityManager: EntityManager,
+  ) {}
 
-    constructor(@InjectRepository(Category) private categoryRepository: Repository<Category>) {
+  create = errorHandler(async (createCategoryDto: CreateCategoryDto) => {
+    // const requiredFields = ['title', 'url'];
+    // // Перевірка обов'язкових полів
+    // checkRequiredFields(createCategoryDto, requiredFields);
+    const category = this.categoryRepository.create(createCategoryDto);
+
+    if (createCategoryDto.parentId) {
+      category.parent = await this.categoryRepository.findOne({
+        where: { id: createCategoryDto.parentId },
+      });
     }
 
-    async create(createCategoryDto: CreateCategoryDto) {
-        const isExistTitle = await this.categoryRepository.findBy({title: createCategoryDto.title});
-        const isExistUrl = await this.categoryRepository.findBy({url: createCategoryDto.url});
-        const requiredFields = ['title', 'url'];
+    return await this.categoryRepository.save(category);
+  });
 
-        // Перевірка обов'язкових полів
-        checkRequiredFields(createCategoryDto, requiredFields);
-        if (isExistTitle.length > 0) {
-            throw new BadRequestException('Category already exist');
-        }
-        if (isExistUrl.length > 0) {
-            throw new BadRequestException('url already exist');
-        }
+  findAll = errorHandler(async () => {
+    const result = await this.entityManager
+      .getTreeRepository(Category)
+      .findTrees();
+    return result;
+  });
 
-        const category = {
-            title: createCategoryDto.title,
-            url: createCategoryDto.url,
-            description: createCategoryDto.description,
-        }
-
-        return await this.categoryRepository.save(category);
+  findOne = errorHandler(async (id: number) => {
+    const category = await this.categoryRepository.findOne({ where: { id } });
+    if (!category) {
+      throw new NotFoundException('Category not found');
     }
 
-    findAll() {
-        return `This action returns all categories`;
+    const result = await this.entityManager
+      .getTreeRepository(Category)
+      .findDescendantsTree(category);
+    return result;
+  });
+
+  async update(id: number, updateCategoryDto: UpdateCategoryDto) {
+    const node = await this.categoryRepository.findOne({
+      where: { id },
+    });
+    if (!node)
+      throw new NotFoundException('Cannot find category to move or update');
+
+    const category = this.categoryRepository.create(updateCategoryDto);
+
+    if (updateCategoryDto.parentId) {
+      const parent = await this.categoryRepository.findOne({
+        where: { id: updateCategoryDto.parentId },
+      });
+      if (!parent)
+        throw new NotFoundException(
+          `Cannot find category with parentId ${updateCategoryDto.parentId}`,
+        );
+      category.parent = parent;
     }
 
-    async findOne(id: number) {
-        const isExist = await this.categoryRepository.findOne({where: {id}});
-        if (!isExist) {
-            throw new NotFoundException('Category not found');
-        }
+    return await this.categoryRepository.update(id, category);
+  }
 
-        return {isExist};
-    }
+  remove = errorHandler(async (id: number) => {
+    const target = await this.categoryRepository.findOne({ where: { id } });
+    if (!target)
+      throw new NotFoundException(`Category with ID ${id} not found`);
 
-    async update(id: number, updateCategoryDto: UpdateCategoryDto) {
-        const category = await this.categoryRepository.findOne({where: {id}});
-        if (!category) {
-            throw new NotFoundException('Category not found');
-        }
-
-        return await this.categoryRepository.update(id, updateCategoryDto);
-    }
-
-    async remove(id: number) {
-        const category = await this.categoryRepository.findOne({where: {id}});
-        if (!category) {throw new NotFoundException('Category not found');}
-
-        return await this.categoryRepository.delete(id);
-    }
+    return await this.categoryRepository.delete(id);
+  });
 }
