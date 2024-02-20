@@ -14,7 +14,7 @@ export class MenuService {
     ) {
     }
 
-    async create(createMenuDto: CreateMenuDto) {
+    async create(lang: string, createMenuDto: CreateMenuDto) {
         const menu = this.menuRepository.create({...createMenuDto});
 
         if (createMenuDto.parentId) {
@@ -24,7 +24,7 @@ export class MenuService {
         return await this.menuRepository.save(menu);
     }
 
-    async findAll(page: number, limit: number) {
+    async findAll(lang: string, page: number, limit: number) {
         const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
         const menus: any = await treeRepository.findTrees();
 
@@ -65,7 +65,6 @@ export class MenuService {
 
         return menu;
     }
-
 
 
     async remove(id: string): Promise<boolean> {

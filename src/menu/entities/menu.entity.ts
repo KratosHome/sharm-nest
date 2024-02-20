@@ -3,7 +3,7 @@ import {
     BeforeInsert,
     Column,
     CreateDateColumn, DeleteDateColumn,
-    Entity, Generated,
+    Entity,
     JoinColumn,
     ManyToOne,
     OneToMany, OneToOne,
@@ -11,6 +11,8 @@ import {
     UpdateDateColumn
 } from "typeorm";
 import {Category} from "../../categories/entities/category.entity";
+import {MenuTranslationEntity} from "./menu-translation.entity";
+
 
 @Entity()
 @Tree("nested-set")
@@ -27,8 +29,8 @@ export class Menu extends BaseEntity {
     @DeleteDateColumn()
     deleteAt: Date;
 
-    @Column({unique: true})
-    name: string;
+    @Column({ unique: true, nullable: true }) // test
+    name: string | null;
 
     @Column({unique: true})
     url: string;
@@ -46,4 +48,6 @@ export class Menu extends BaseEntity {
     @JoinColumn()
     category: Category;
 
+    @OneToMany(() => MenuTranslationEntity, (translation) => translation.menu)
+    translations: MenuTranslationEntity;
 }
