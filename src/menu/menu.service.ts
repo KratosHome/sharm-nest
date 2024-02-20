@@ -1,34 +1,53 @@
-import {BadRequestException, Injectable, NotFoundException} from '@nestjs/common';
+import {Injectable, NotFoundException} from '@nestjs/common';
 import {UpdateMenuDto} from './dto/update-menu.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {Menu} from "./entities/menu.entity";
 import {Repository} from "typeorm";
 import {JwtService} from "@nestjs/jwt";
 import {CreateMenuDto} from "./dto/create-menu.dto";
+import {MenuTranslationEntity} from "./entities/menu-translation.entity";
 
 @Injectable()
 export class MenuService {
     constructor(
         @InjectRepository(Menu) private menuRepository: Repository<Menu>,
+        @InjectRepository(MenuTranslationEntity) private menuTranslationRepository: Repository<MenuTranslationEntity>,
         private readonly jwtService: JwtService,
     ) {
     }
 
-    async create(createMenuDto: CreateMenuDto) {
-        const menu = this.menuRepository.create({...createMenuDto});
+    async create(lang: string, createMenuDto: CreateMenuDto) {
+        const menu = this.menuRepository.create({
+            icons: createMenuDto.icons,
+            translations: createMenuDto.translations,
+        });
 
         if (createMenuDto.parentId) {
             menu.parent = await this.menuRepository.findOne({where: {id: createMenuDto.parentId}});
         }
 
+        for (const localizationDto of createMenuDto.translations) {
+            await this.menuTranslationRepository.save(localizationDto);
+        }
+
         return await this.menuRepository.save(menu);
     }
 
-    async findAll(page: number, limit: number) {
+    async findAll(lang: string, page: number, limit: number) {
         const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
         const menus: any = await treeRepository.findTrees();
 
-        return menus;
+        const menus2: any = await treeRepository.findTrees({
+            relations: ["translations", "children"]
+        });
+        const menus33 = await treeRepository.createQueryBuilder("menu")
+            .leftJoinAndSelect("menu.translations", "translation")
+            .leftJoinAndSelect("menu.children", "child")
+            .getMany();
+
+        console.log("menus2", menus33);
+
+        return menus2;
     }
 
     async findOne(id: string) {
@@ -65,7 +84,6 @@ export class MenuService {
 
         return menu;
     }
-
 
 
     async remove(id: string): Promise<boolean> {

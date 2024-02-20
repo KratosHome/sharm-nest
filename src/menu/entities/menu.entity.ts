@@ -29,6 +29,7 @@ export class Menu extends BaseEntity {
   @DeleteDateColumn()
   deleteAt: Date;
 
+
   @Column({ unique: true, nullable: true })
   name: string;
   // @Column({unique: true})
@@ -40,15 +41,12 @@ export class Menu extends BaseEntity {
   @Column()
   icons: string;
 
+
   @TreeChildren()
   children: Menu[];
 
   @TreeParent()
   parent: Menu;
-
-  // @OneToOne(() => Category, category => category.menu)
-  // @JoinColumn()
-  // category: Category;
 
   @OneToOne(() => Category, (category) => category.menu)
   @JoinColumn()

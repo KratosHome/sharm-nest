@@ -10,10 +10,10 @@ export class MenuController {
     constructor(private readonly menuService: MenuService) {
     }
 
-    @Post()
+    @Post(":lang")
     @UsePipes(new ValidationPipe())
-    create(@Body() createMenuDto: CreateMenuDto) {
-        return this.menuService.create(createMenuDto);
+    create(@Param('lang') lang: string, @Body() createMenuDto: CreateMenuDto) {
+        return this.menuService.create(lang, createMenuDto);
     }
 
     @Post(':id')
@@ -21,10 +21,10 @@ export class MenuController {
         return this.menuService.updateItem(id, updateMenuDto);
     }
 
-    @Get()
+    @Get(":lang")
     @UsePipes(new ValidationPipe())
-    findAll(@Query("page") page: number, @Query("limit") limit: number) {
-        return this.menuService.findAll(page, limit);
+    findAll(@Param('lang') lang: string, @Query("page") page: number, @Query("limit") limit: number) {
+        return this.menuService.findAll(lang, page, limit);
     }
 
 
