@@ -5,10 +5,11 @@ import {TypeOrmModule} from "@nestjs/typeorm";
 import {Menu} from "./entities/menu.entity";
 import {JwtModule} from "@nestjs/jwt";
 import {ConfigModule, ConfigService} from "@nestjs/config";
+import {MenuTranslationEntity} from "./entities/menu-translation.entity";
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Menu]),
+        TypeOrmModule.forFeature([Menu, MenuTranslationEntity]),
         JwtModule.registerAsync({
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => ({

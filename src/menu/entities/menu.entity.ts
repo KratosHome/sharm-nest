@@ -13,6 +13,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
+// import {MenuTranslationEntity} from "./menu-translation.entity";
+
 
 @Entity()
 @Tree('nested-set')
@@ -53,4 +55,8 @@ export class Menu extends BaseEntity {
   @OneToOne(() => Category, (category) => category.menu)
   @JoinColumn()
   category: Category;
+
+//   @OneToMany(() => MenuTranslationEntity, (translation) => translation.menu)
+//   translations: MenuTranslationEntity[];
+
 }
