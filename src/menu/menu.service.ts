@@ -19,22 +19,29 @@ export class MenuService {
     async create(lang: string, createMenuDto: CreateMenuDto) {
         const menu = this.menuRepository.create({
             icons: createMenuDto.icons,
+            //   translations: [...createMenuDto.translations]
         });
 
-        const translations = createMenuDto.translations.map(translationDto => {
-            const translation = this.menuTranslationRepository.create(translationDto);
-            translation.menu = menu; // Встановлення зв'язку з меню
-            return translation;
-        });
-
-
-        console.log("menu", menu);
+/*
+        const translations = this.menuTranslationRepository.create(createMenuDto.translations)
+        menu.translations = [...translations];
+ */
         if (createMenuDto.parentId) {
             menu.parent = await this.menuRepository.findOne({where: {id: createMenuDto.parentId}});
         }
+        const savedMenu = await this.menuRepository.save(menu);
 
-        await this.menuTranslationRepository.save(translations);
-        return await this.menuRepository.save(menu);
+        console.log(savedMenu.id);
+
+        for (const translationData of createMenuDto.translations) {
+            const translation = this.menuTranslationRepository.create({
+                ...translationData,
+                menu: savedMenu
+            });
+            await this.menuTranslationRepository.save(translation);
+        }
+
+        return menu
     }
 
     async findAll(lang: string, page: number, limit: number) {
