@@ -1,7 +1,7 @@
 import {
     BaseEntity,
     Column,
-    Entity,
+    Entity, JoinColumn,
     ManyToOne,
     PrimaryGeneratedColumn,
     Tree,
@@ -24,5 +24,6 @@ export class MenuTranslationEntity extends BaseEntity {
     lang: string;
 
     @ManyToOne(() => Menu, (menu) => menu.translations)
+    @JoinColumn({ name: 'menuId' })
     menu: Menu;
 }
