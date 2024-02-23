@@ -40,6 +40,6 @@ export class Menu extends BaseEntity {
     @JoinColumn()
     category: Category;
 
-    @OneToMany(() => MenuTranslationEntity, (translation) => translation.menu, {cascade: true, eager: true})
+    @OneToMany(() => MenuTranslationEntity, (translation) => translation.menu)
     translations: MenuTranslationEntity[];
 }

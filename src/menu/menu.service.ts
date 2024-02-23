@@ -19,27 +19,23 @@ export class MenuService {
     async create(lang: string, createMenuDto: CreateMenuDto) {
         const menu = this.menuRepository.create({
             icons: createMenuDto.icons,
-            //   translations: [...createMenuDto.translations]
         });
 
-/*
-        const translations = this.menuTranslationRepository.create(createMenuDto.translations)
-        menu.translations = [...translations];
- */
         if (createMenuDto.parentId) {
             menu.parent = await this.menuRepository.findOne({where: {id: createMenuDto.parentId}});
         }
         const savedMenu = await this.menuRepository.save(menu);
 
-        console.log(savedMenu.id);
 
         for (const translationData of createMenuDto.translations) {
             const translation = this.menuTranslationRepository.create({
                 ...translationData,
                 menu: savedMenu
             });
+            console.log("translation", translation);
             await this.menuTranslationRepository.save(translation);
         }
+
 
         return menu
     }

@@ -9,7 +9,6 @@ import {
 import {Menu} from "./menu.entity";
 
 @Entity()
-@Tree("nested-set")
 export class MenuTranslationEntity extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
