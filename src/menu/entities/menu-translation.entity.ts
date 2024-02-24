@@ -1,7 +1,7 @@
 import {
     BaseEntity,
     Column,
-    Entity,
+    Entity, JoinColumn,
     ManyToOne,
     PrimaryGeneratedColumn,
     Tree,
@@ -9,7 +9,6 @@ import {
 import {Menu} from "./menu.entity";
 
 @Entity()
-@Tree("nested-set")
 export class MenuTranslationEntity extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
@@ -24,5 +23,6 @@ export class MenuTranslationEntity extends BaseEntity {
     lang: string;
 
     @ManyToOne(() => Menu, (menu) => menu.translations)
+    @JoinColumn({ name: 'menuId' })
     menu: Menu;
 }

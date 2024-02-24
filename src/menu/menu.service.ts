@@ -19,18 +19,25 @@ export class MenuService {
     async create(lang: string, createMenuDto: CreateMenuDto) {
         const menu = this.menuRepository.create({
             icons: createMenuDto.icons,
-            translations: createMenuDto.translations,
         });
 
         if (createMenuDto.parentId) {
             menu.parent = await this.menuRepository.findOne({where: {id: createMenuDto.parentId}});
         }
+        const savedMenu = await this.menuRepository.save(menu);
 
-        for (const localizationDto of createMenuDto.translations) {
-            await this.menuTranslationRepository.save(localizationDto);
+
+        for (const translationData of createMenuDto.translations) {
+            const translation = this.menuTranslationRepository.create({
+                ...translationData,
+                menu: savedMenu
+            });
+            console.log("translation", translation);
+            await this.menuTranslationRepository.save(translation);
         }
 
-        return await this.menuRepository.save(menu);
+
+        return menu
     }
 
     async findAll(lang: string, page: number, limit: number) {
@@ -42,7 +49,7 @@ export class MenuService {
         });
         const menus33 = await treeRepository.createQueryBuilder("menu")
             .leftJoinAndSelect("menu.translations", "translation")
-            .leftJoinAndSelect("menu.children", "child")
+            .leftJoinAndSelect("menu.children", "children")
             .getMany();
 
         console.log("menus2", menus33);

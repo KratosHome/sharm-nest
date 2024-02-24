@@ -13,7 +13,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
-// import {MenuTranslationEntity} from "./menu-translation.entity";
+import {MenuTranslationEntity} from "./menu-translation.entity";
 
 
 @Entity()
@@ -48,15 +48,10 @@ export class Menu extends BaseEntity {
   @TreeParent()
   parent: Menu;
 
-  // @OneToOne(() => Category, category => category.menu)
-  // @JoinColumn()
-  // category: Category;
-
   @OneToOne(() => Category, (category) => category.menu)
   @JoinColumn()
   category: Category;
 
-//   @OneToMany(() => MenuTranslationEntity, (translation) => translation.menu)
-//   translations: MenuTranslationEntity[];
-
+  @OneToMany(() => MenuTranslationEntity, (translation) => translation.menu)
+  translations: MenuTranslationEntity[];
 }
