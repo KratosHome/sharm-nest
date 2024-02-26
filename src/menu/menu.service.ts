@@ -3,70 +3,81 @@ import {UpdateMenuDto} from './dto/update-menu.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {Menu} from "./entities/menu.entity";
 import {Repository} from "typeorm";
-import {JwtService} from "@nestjs/jwt";
 import {CreateMenuDto} from "./dto/create-menu.dto";
 import {MenuTranslationEntity} from "./entities/menu-translation.entity";
+import {filterTranslationsByLang} from "../helpers/filterTranslationsByLang";
 
 @Injectable()
 export class MenuService {
     constructor(
         @InjectRepository(Menu) private menuRepository: Repository<Menu>,
         @InjectRepository(MenuTranslationEntity) private menuTranslationRepository: Repository<MenuTranslationEntity>,
-        private readonly jwtService: JwtService,
+        //    private readonly jwtService: JwtService,
     ) {
     }
 
-    async create(lang: string, createMenuDto: CreateMenuDto) {
+    async create(createMenuDto: CreateMenuDto): Promise<Menu> {
         const menu = this.menuRepository.create({
             icons: createMenuDto.icons,
         });
 
-        if (createMenuDto.parentId) {
-            menu.parent = await this.menuRepository.findOne({where: {id: createMenuDto.parentId}});
-        }
-        const savedMenu = await this.menuRepository.save(menu);
+        if (createMenuDto.parentId) menu.parent = await this.menuRepository.findOne({where: {id: createMenuDto.parentId}});
 
+        const savedMenu = await this.menuRepository.save(menu);
 
         for (const translationData of createMenuDto.translations) {
             const translation = this.menuTranslationRepository.create({
                 ...translationData,
                 menu: savedMenu
             });
-            console.log("translation", translation);
             await this.menuTranslationRepository.save(translation);
         }
-
 
         return menu
     }
 
-    async findAll(lang: string, page: number, limit: number) {
-        const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
-        const menus: any = await treeRepository.findTrees();
+    async updateItem(lang: string, id: string, updateMenuDto: UpdateMenuDto): Promise<Menu> {
+        let menu = await this.menuRepository.findOne({
+            where: {id},
+            relations: ['translations']
+        });
 
-        const menus2: any = await treeRepository.findTrees({
+        if (!menu) throw new NotFoundException(`Menu item with ID ${id} not found`);
+        const {translations, ...newData} = updateMenuDto;
+        menu = this.menuRepository.merge(menu, newData);
+
+        const translationIndex = menu.translations.findIndex(t => t.lang === lang);
+
+        if (translationIndex === -1) throw new Error('Translation not found');
+
+        const translation = this.menuTranslationRepository.merge(menu.translations[translationIndex], ...updateMenuDto.translations);
+
+        await this.menuTranslationRepository.save(translation);
+        await this.menuRepository.save(menu);
+
+        return menu;
+    }
+
+    async findAll(lang: string): Promise<Menu[]> {
+        const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
+        const menus: any = await treeRepository.findTrees({
             relations: ["translations", "children"]
         });
-        const menus33 = await treeRepository.createQueryBuilder("menu")
-            .leftJoinAndSelect("menu.translations", "translation")
-            .leftJoinAndSelect("menu.children", "children")
-            .getMany();
 
-        console.log("menus2", menus33);
+        menus.forEach((menu: Menu) => filterTranslationsByLang(menu, lang));
 
-        return menus2;
+        return menus;
     }
 
-    async findOne(id: string) {
+    async findOne(lang: string, id: string): Promise<Menu> {
         const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
-        const menu = await this.menuRepository.findOne({where: {id}});
-
+        const menu = await this.menuRepository.findOne({where: {id}, relations: ["translations", "children"]});
         if (!menu) throw new Error('Menu not found');
+        filterTranslationsByLang(menu, lang);
 
-        const menuWithChildren = await treeRepository.findDescendantsTree(menu);
-
-        return menuWithChildren;
+        return treeRepository.findDescendantsTree(menu);
     }
+
 
     async moveItem(nodeId: string, parentId: string) {
         const node = await this.menuRepository.findOne({where: {id: nodeId}});
@@ -81,17 +92,6 @@ export class MenuService {
         return node;
     }
 
-    async updateItem(id: string, updateMenuDto: UpdateMenuDto): Promise<Menu> {
-        let menu = await this.menuRepository.findOne({where: {id}});
-        if (!menu) throw new NotFoundException(`Menu item with ID ${id} not found`);
-
-        menu = this.menuRepository.merge(menu, updateMenuDto);
-
-        await this.menuRepository.save(menu);
-
-        return menu;
-    }
-
 
     async remove(id: string): Promise<boolean> {
         const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
@@ -104,6 +104,4 @@ export class MenuService {
 
         return true
     }
-
-
 }

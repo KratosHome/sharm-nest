@@ -1,20 +1,40 @@
 import {ApiProperty, PartialType} from '@nestjs/swagger';
-import { CreateMenuDto } from './create-menu.dto';
-import {IsOptional, IsString, IsUUID} from "class-validator";
+import {CreateMenuDto} from './create-menu.dto';
+import {IsNotEmpty, IsOptional, IsString, IsUUID} from "class-validator";
 
-export class UpdateMenuDto extends PartialType(CreateMenuDto) {
-    @ApiProperty({ example: 'Головна', description: 'Назва пункту меню', required: false })
-    @IsOptional()
+class UpdateMenuTranslationDto {
+    @IsNotEmpty()
     @IsString()
-    name?: string;
+    name: string;
 
-    @ApiProperty({ example: '/home', description: 'URL пункту меню', required: false })
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    url?: string;
+    url: string;
+}
 
-    @ApiProperty({ example: 'icon-home', description: 'Іконка пункту меню', required: false })
-    @IsOptional()
+export class UpdateMenuDto {
+    @ApiProperty({example: '', description: 'image'})
+    @IsNotEmpty()
     @IsString()
-    icons?: string;
+    icons: string;
+
+    @ApiProperty({
+        example: '123e4567-e89b-12d3-a456-426614174000',
+        description: 'ID parent menu item',
+        required: false
+    })
+    @IsOptional()
+    @IsUUID()
+    parentId?: string;
+
+    @ApiProperty({
+        type: [UpdateMenuTranslationDto],
+        description: 'translations for menu item',
+        example: [{
+            name: 'Home',
+            url: '/home'
+        }]
+    })
+    @IsOptional()
+    translations: UpdateMenuTranslationDto[];
 }

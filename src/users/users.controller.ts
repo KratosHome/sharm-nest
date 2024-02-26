@@ -52,7 +52,7 @@ export class UsersController {
         return this.usersService.findAll(page, limit)
     }
 
-    // not tested
+
     @Post("update")
     @ApiOperation({summary: 'update user profile = admin can update any user'})
     @ApiBody({type: UpdateUserDto, description: 'Update user by id - front'})

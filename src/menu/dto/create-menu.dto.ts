@@ -17,20 +17,29 @@ class CreateMenuTranslationDto {
 }
 
 export class CreateMenuDto {
-    @ApiProperty({example: 'icon-home', description: 'Іконка пункту меню'})
+    @ApiProperty({example: '', description: 'image'})
     @IsNotEmpty()
     @IsString()
     icons: string;
 
     @ApiProperty({
         example: '123e4567-e89b-12d3-a456-426614174000',
-        description: 'ID батьківського пункту меню',
+        description: 'ID parent menu item',
         required: false
     })
     @IsOptional()
     @IsUUID()
     parentId?: string;
 
+    @ApiProperty({
+        type: [CreateMenuTranslationDto],
+        description: 'translations for menu item',
+        example: [{
+            name: 'Home',
+            url: '/home',
+            lang: 'en'
+        }]
+    })
     @IsOptional()
     translations: CreateMenuTranslationDto[];
 }
