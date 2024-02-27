@@ -8,6 +8,7 @@ import {
     UpdateDateColumn
 } from "typeorm";
 import {Order} from "../../orders/entities/order.entity";
+import {rolesEnum} from "../../enums/roles";
 
 
 @Entity()
@@ -48,7 +49,7 @@ export class User {
     @Column({unique: true})
     password: string;
 
-    @Column()
+    @Column({type: "enum", enum: rolesEnum, default: rolesEnum.user})
     role: string;
 
     @OneToMany(() => Order, (order) => order.user, {onDelete: "NO ACTION"})

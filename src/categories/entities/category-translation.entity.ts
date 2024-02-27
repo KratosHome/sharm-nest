@@ -6,6 +6,7 @@ import {
     PrimaryGeneratedColumn,
 } from "typeorm";
 import {Category} from "./category.entity";
+import {LangEnum} from "../../enums/lang";
 
 @Entity()
 export class CategoryTranslationEntity extends BaseEntity {
@@ -13,6 +14,7 @@ export class CategoryTranslationEntity extends BaseEntity {
     id: string;
 
     @Column()
+    @Column({type: "enum", enum: LangEnum})
     lang: string;
 
     @Column({unique: true})
@@ -21,7 +23,7 @@ export class CategoryTranslationEntity extends BaseEntity {
     @Column({unique: true})
     description: string;
 
-    @Column()
+    @Column({unique: true})
     metaTitle: string;
 
     @Column()
