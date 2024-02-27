@@ -34,6 +34,7 @@ export class MenuController {
     }
 
     @Post(':lang/:id')
+    @UsePipes(new ValidationPipe())
     @UseInterceptors(ErrorsInterceptor)
     // @SetMetadata('roles', ['admin', 'manager'])
     @ApiOperation({summary: 'update user', description: 'role: admin, manage'})

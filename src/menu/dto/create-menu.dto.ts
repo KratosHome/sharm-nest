@@ -20,7 +20,7 @@ export class CreateMenuDto {
     @ApiProperty({example: '', description: 'image'})
     @IsNotEmpty()
     @IsString()
-    icons: string;
+    icons?: string;
 
     @ApiProperty({
         example: '123e4567-e89b-12d3-a456-426614174000',

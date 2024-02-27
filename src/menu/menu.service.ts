@@ -12,7 +12,7 @@ export class MenuService {
     constructor(
         @InjectRepository(Menu) private menuRepository: Repository<Menu>,
         @InjectRepository(MenuTranslationEntity) private menuTranslationRepository: Repository<MenuTranslationEntity>,
-        //    private readonly jwtService: JwtService,
+        //  private readonly jwtService: JwtService,
     ) {
     }
 

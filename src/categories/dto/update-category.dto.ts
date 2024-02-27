@@ -1,4 +1,54 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateCategoryDto } from './create-category.dto';
+import {IsNotEmpty, IsOptional, IsString, IsUUID} from "class-validator";
+import {ApiProperty} from "@nestjs/swagger";
 
-export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {}
+class UpdateCategoryTranslationDto {
+    @IsNotEmpty()
+    @IsString()
+    name: string;
+
+    @IsNotEmpty()
+    @IsString()
+    description: string;
+
+    @IsNotEmpty()
+    @IsString()
+    metaTitle: string;
+
+    @IsNotEmpty()
+    @IsString()
+    metaKeywords: string;
+
+    @IsNotEmpty()
+    @IsString()
+    metaDescription: string;
+}
+
+export class UpdateCategoryDto {
+    @ApiProperty({example: '', description: 'image'})
+    @IsNotEmpty()
+    @IsString()
+    metaImages?: string;
+
+    @ApiProperty({
+        example: '123e4567-e89b-12d3-a456-426614174000',
+        description: 'ID parent menu item',
+        required: false
+    })
+    @IsOptional()
+    @IsUUID()
+    parentId?: string;
+
+    @ApiProperty({
+        type: [UpdateCategoryTranslationDto],
+        description: 'translations for menu item',
+        example: [{
+            name: 'Home',
+            description: 'text',
+            metaTitle: 'text',
+            metaKeywords: 'text',
+            metaDescription: 'text',
+        }]
+    })
+    @IsOptional()
+    translations: UpdateCategoryTranslationDto[];
+}

@@ -1,72 +1,102 @@
-import {BadRequestException, Injectable, NotFoundException} from '@nestjs/common';
+import {Injectable, NotFoundException} from '@nestjs/common';
 import {CreateCategoryDto} from './dto/create-category.dto';
 import {UpdateCategoryDto} from './dto/update-category.dto';
 import {Repository} from "typeorm";
 import {Category} from "./entities/category.entity";
 import {InjectRepository} from "@nestjs/typeorm";
-
-function checkRequiredFields(dto, requiredFields) {
-    const missingFields = requiredFields.filter(field => !dto[field]);
-    if (missingFields.length > 0) {
-        throw new BadRequestException(`Missing required fields: ${missingFields.join(', ')}`);
-    }
-}
+import {CategoryTranslationEntity} from "./entities/category-translation.entity";
+import {Menu} from "../menu/entities/menu.entity";
+import {filterTranslationsByLang} from "../helpers/filterTranslationsByLang";
 
 @Injectable()
 export class CategoriesService {
 
-    constructor(@InjectRepository(Category) private categoryRepository: Repository<Category>) {
+    constructor(
+        @InjectRepository(Category) private categoryRepository: Repository<Category>,
+        @InjectRepository(Category) private categoryTranslationRepository: Repository<CategoryTranslationEntity>
+    ) {
     }
 
-    async create(createCategoryDto: CreateCategoryDto) {
-        const isExistTitle = await this.categoryRepository.findBy({title: createCategoryDto.title});
-        const isExistUrl = await this.categoryRepository.findBy({url: createCategoryDto.url});
-        const requiredFields = ['title', 'url'];
+    async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
+        const category = this.categoryRepository.create({metaImages: createCategoryDto.metaImages});
 
-        // Перевірка обов'язкових полів
-        checkRequiredFields(createCategoryDto, requiredFields);
-        if (isExistTitle.length > 0) {
-            throw new BadRequestException('Category already exist');
-        }
-        if (isExistUrl.length > 0) {
-            throw new BadRequestException('url already exist');
-        }
+        if (createCategoryDto.parentId) category.parent = await this.categoryRepository.findOne({where: {id: createCategoryDto.parentId}});
 
-        const category = {
-            title: createCategoryDto.title,
-            url: createCategoryDto.url,
-            description: createCategoryDto.description,
+        const savedCategory = await this.categoryRepository.save(category);
+
+        for (const translationData of createCategoryDto.translations) {
+            const translation = this.categoryTranslationRepository.create({
+                ...translationData,
+                category: savedCategory
+            });
+            await this.categoryTranslationRepository.save(translation);
         }
 
-        return await this.categoryRepository.save(category);
+        return category
     }
 
-    findAll() {
-        return `This action returns all categories`;
+
+    async updateItem(lang: string, id: string, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
+        let category = await this.categoryRepository.findOne({where: {id}, relations: ['translations']});
+
+        if (!category) throw new NotFoundException(`Menu item with ID ${id} not found`);
+        const {translations, ...newData} = updateCategoryDto;
+        category = this.categoryRepository.merge(category, newData);
+
+        const translationIndex = category.translations.findIndex(t => t.lang === lang);
+
+        if (translationIndex === -1) throw new Error('Translation not found');
+
+        const translation = this.categoryTranslationRepository.merge(category.translations[translationIndex], ...updateCategoryDto.translations);
+
+        await this.categoryTranslationRepository.save(translation);
+        await this.categoryRepository.save(category);
+
+        return category;
     }
 
-    async findOne(id: number) {
-        const isExist = await this.categoryRepository.findOne({where: {id}});
-        if (!isExist) {
-            throw new NotFoundException('Category not found');
-        }
+    async findAll(lang: string): Promise<Category[]> {
+        const treeRepository = this.categoryRepository.manager.getTreeRepository(Menu);
+        const categorys: any = await treeRepository.findTrees({
+            relations: ["translations", "children"]
+        });
 
-        return {isExist};
+        categorys.forEach((menu: Menu) => filterTranslationsByLang(menu, lang));
+
+        return categorys;
     }
 
-    async update(id: number, updateCategoryDto: UpdateCategoryDto) {
-        const category = await this.categoryRepository.findOne({where: {id}});
-        if (!category) {
-            throw new NotFoundException('Category not found');
-        }
+    async findOne(lang: string, id: string): Promise<Category> {
+        const treeRepository = this.categoryRepository.manager.getTreeRepository(Category);
+        const category = await this.categoryRepository.findOne({where: {id}, relations: ["translations", "children"]});
+        if (!category) throw new Error('category not found');
+        filterTranslationsByLang(category, lang);
 
-        return await this.categoryRepository.update(id, updateCategoryDto);
+        return treeRepository.findDescendantsTree(category);
     }
 
-    async remove(id: number) {
-        const category = await this.categoryRepository.findOne({where: {id}});
-        if (!category) {throw new NotFoundException('Category not found');}
+    async moveItem(nodeId: string, parentId: string) {
+        const node = await this.categoryRepository.findOne({where: {id: nodeId}});
+        if (!node) throw new Error('Cannot find node to move');
+        const newParent = await this.categoryRepository.findOne({where: {id: parentId}});
+        if (!newParent) throw new Error('Cannot find new parent node');
 
-        return await this.categoryRepository.delete(id);
+        node.parent = newParent;
+
+        await this.categoryRepository.save(node);
+
+        return node;
+    }
+
+    async remove(id: string): Promise<boolean> {
+        const treeRepository = this.categoryRepository.manager.getTreeRepository(Category);
+        const target = await this.categoryRepository.findOne({where: {id}});
+        if (!target) throw new NotFoundException(`Category with ID ${id} not found`);
+
+        const descendants = await treeRepository.findDescendants(target);
+
+        await treeRepository.remove(descendants);
+
+        return true
     }
 }

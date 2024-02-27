@@ -4,7 +4,6 @@ import {
     Entity, JoinColumn,
     ManyToOne,
     PrimaryGeneratedColumn,
-    Tree,
 } from "typeorm";
 import {Menu} from "./menu.entity";
 
