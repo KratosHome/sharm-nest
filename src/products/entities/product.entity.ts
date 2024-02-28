@@ -23,7 +23,7 @@ export class Product {
 
     @ApiProperty({example: 'string', description: 'img'})
     @Column()
-    img: string;
+    img?: string;
 
     @ApiProperty({example: '42', description: 'visit count'})
     @Column({default: 0})
