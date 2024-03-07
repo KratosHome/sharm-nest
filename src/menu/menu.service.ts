@@ -6,6 +6,7 @@ import {Repository} from "typeorm";
 import {CreateMenuDto} from "./dto/create-menu.dto";
 import {MenuTranslationEntity} from "./entities/menu-translation.entity";
 import {filterTranslationsByLang} from "../helpers/filterTranslationsByLang";
+import { In } from 'typeorm';
 
 @Injectable()
 export class MenuService {
@@ -100,8 +101,13 @@ export class MenuService {
 
         const descendants = await treeRepository.findDescendants(target);
 
+        await this.menuTranslationRepository.delete({
+            menu: In(descendants.map(d => d.id))
+        });
+
         await treeRepository.remove(descendants);
 
-        return true
+        return true;
     }
+
 }
