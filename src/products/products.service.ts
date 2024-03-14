@@ -69,15 +69,62 @@ export class ProductsService {
         };
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} product`;
+    async findOne(lang: string, id: string) {
+        const product = await this.productRepository.createQueryBuilder('product')
+            .leftJoinAndSelect('product.translations', 'translation', 'translation.lang = :lang', {lang})
+            .leftJoinAndSelect('product.items', 'item')
+            .where('product.id = :id', {id})
+            .getOne();
+
+        if (!product) {
+            throw new Error(`Product with ID ${id} not found`);
+        }
+
+        return product;
     }
 
-    update(id: number, updateProductDto: UpdateProductDto) {
-        return `This action updates a #${id} product`;
+    async update(lang: string, id: string, updateProductDto: UpdateProductDto) {
+        const {translations, items, ...updateData} = updateProductDto;
+        await this.productRepository.update(id, updateData);
+
+        const product = await this.productRepository.findOne({
+            where: {id},
+            relations: ['translations', 'items'],
+        });
+
+        if (!product) throw new Error(`Product with ID ${id} not found`);
+        if (translations) {
+            const findLang = translations.find(t => t.lang === lang);
+            if (findLang) {
+                await this.productTranslationRepository.update(
+                    {product: product, lang: lang},
+                    findLang
+                );
+            }
+        }
+
+        if (items && items.length > 0) {
+            await this.productItemsRepository.delete({product: {id: product.id}});
+            for (const itemData of items) {
+                await this.productItemsRepository.save({
+                    ...itemData,
+                    product: product
+                });
+            }
+        }
+
+        return this.findOne(lang, id);
     }
 
-    remove(id: number) {
-        return `This action removes a #${id} product`;
+    async remove(id: string): Promise<void> {
+        const product = await this.productRepository.findOne({where: {id}});
+        if (!product) throw new Error(`Product with ID ${id} not found`);
+
+        await this.productTranslationRepository.delete({product: {id}});
+
+        await this.productItemsRepository.delete({product: {id}});
+
+        await this.productRepository.delete(id);
     }
+
 }
