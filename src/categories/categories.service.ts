@@ -13,7 +13,7 @@ export class CategoriesService {
 
     constructor(
         @InjectRepository(Category) private categoryRepository: Repository<Category>,
-        @InjectRepository(Category) private categoryTranslationRepository: Repository<CategoryTranslationEntity>
+        @InjectRepository(CategoryTranslationEntity) private categoryTranslationRepository: Repository<CategoryTranslationEntity>
     ) {
     }
 
