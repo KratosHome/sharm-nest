@@ -32,7 +32,7 @@ export class CategoryTranslationEntity extends BaseEntity {
     @Column()
     metaDescription: string;
 
-    @ManyToOne(() => Category, (menu) => menu.translations)
-    @JoinColumn({name: 'menuId'})
+    @ManyToOne(() => Category, (category) => category.translations)
+    @JoinColumn({name: 'categoryId'})
     category: Category;
 }

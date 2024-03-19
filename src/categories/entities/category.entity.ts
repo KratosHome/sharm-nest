@@ -31,9 +31,6 @@ export class Category extends BaseEntity {
     @DeleteDateColumn()
     deleteAt: Date;
 
-    @OneToMany(() => Menu, menu => menu.category)
-    menu: Menu;
-
     @ApiProperty({example: '1', description: 'icon img'})
     @Column()
     metaImages: string;

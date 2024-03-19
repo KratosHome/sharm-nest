@@ -45,12 +45,8 @@ export class Menu extends BaseEntity {
     @TreeParent()
     parent: Menu
 
-    @ApiProperty({ type: () => Category, description: 'The category associated with the menu' })
-    @OneToOne(() => Category, category => category.menu)
-    @JoinColumn()
-    category: Category;
-
     @ApiProperty({ type: () => MenuTranslationEntity, isArray: true, description: 'Translate menu' })
     @OneToMany(() => MenuTranslationEntity, (translation) => translation.menu, {cascade: true})
     translations: MenuTranslationEntity[];
+
 }

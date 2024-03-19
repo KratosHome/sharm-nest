@@ -5,7 +5,6 @@ import {Repository} from "typeorm";
 import {Category} from "./entities/category.entity";
 import {InjectRepository} from "@nestjs/typeorm";
 import {CategoryTranslationEntity} from "./entities/category-translation.entity";
-import {Menu} from "../menu/entities/menu.entity";
 import {filterTranslationsByLang} from "../helpers/filterTranslationsByLang";
 
 @Injectable()
@@ -39,7 +38,7 @@ export class CategoriesService {
     async updateItem(lang: string, id: string, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
         let category = await this.categoryRepository.findOne({where: {id}, relations: ['translations']});
 
-        if (!category) throw new NotFoundException(`Menu item with ID ${id} not found`);
+        if (!category) throw new NotFoundException(`Category item with ID ${id} not found`);
         const {translations, ...newData} = updateCategoryDto;
         category = this.categoryRepository.merge(category, newData);
 
@@ -56,12 +55,12 @@ export class CategoriesService {
     }
 
     async findAll(lang: string): Promise<Category[]> {
-        const treeRepository = this.categoryRepository.manager.getTreeRepository(Menu);
+        const treeRepository = this.categoryRepository.manager.getTreeRepository(Category);
         const categorys: any = await treeRepository.findTrees({
             relations: ["translations", "children"]
         });
 
-       categorys.forEach((menu: Menu) => filterTranslationsByLang(menu, lang));
+       categorys.forEach((category: Category) => filterTranslationsByLang(category, lang));
 
         return categorys;
     }

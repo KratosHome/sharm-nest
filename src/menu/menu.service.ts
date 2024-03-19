@@ -61,7 +61,9 @@ export class MenuService {
 
     async findAll(lang: string): Promise<Menu[]> {
         const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
-        const menus: any = await treeRepository.findTrees();
+        const menus: any = await treeRepository.findTrees({
+            relations: ["translations", "children"]
+        });
 
         menus.forEach((menu: Menu) => filterTranslationsByLang(menu, lang));
 
