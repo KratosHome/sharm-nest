@@ -61,7 +61,7 @@ export class CategoriesService {
             relations: ["translations", "children"]
         });
 
-        categorys.forEach((menu: Menu) => filterTranslationsByLang(menu, lang));
+       categorys.forEach((menu: Menu) => filterTranslationsByLang(menu, lang));
 
         return categorys;
     }

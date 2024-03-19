@@ -6,7 +6,7 @@ import {Repository} from "typeorm";
 import {CreateMenuDto} from "./dto/create-menu.dto";
 import {MenuTranslationEntity} from "./entities/menu-translation.entity";
 import {filterTranslationsByLang} from "../helpers/filterTranslationsByLang";
-import { In } from 'typeorm';
+import {In} from 'typeorm';
 
 @Injectable()
 export class MenuService {
@@ -61,9 +61,7 @@ export class MenuService {
 
     async findAll(lang: string): Promise<Menu[]> {
         const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
-        const menus: any = await treeRepository.findTrees({
-            relations: ["translations", "children"]
-        });
+        const menus: any = await treeRepository.findTrees();
 
         menus.forEach((menu: Menu) => filterTranslationsByLang(menu, lang));
 

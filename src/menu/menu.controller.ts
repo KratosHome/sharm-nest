@@ -54,7 +54,7 @@ export class MenuController {
 
 
     @Get(':lang/:id')
-    @UsePipes(new ValidationPipe())
+    // @UsePipes(new ValidationPipe())
     @UseInterceptors(ErrorsInterceptor)
     @ApiOperation({summary: 'get by id', description: 'role: all'})
     @ApiResponse({status: 200, description: 'Element update', type: Menu})

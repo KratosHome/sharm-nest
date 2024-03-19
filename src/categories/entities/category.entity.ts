@@ -1,4 +1,5 @@
 import {
+    BaseEntity,
     Column,
     CreateDateColumn,
     DeleteDateColumn,
@@ -13,7 +14,7 @@ import {CategoryTranslationEntity} from "./category-translation.entity";
 
 @Entity()
 @Tree("nested-set")
-export class Category {
+export class Category extends BaseEntity {
     @ApiProperty({example: '637800f3-bd8d-42ab-b1ca-15ba9274203e', description: 'ID'})
     @PrimaryGeneratedColumn('uuid')
     id: string;
@@ -41,7 +42,7 @@ export class Category {
     @TreeChildren()
     children: Category[];
 
-    @ApiProperty({type: () => Menu, description: 'Parent menu items'})
+    @ApiProperty({type: () => Category, description: 'Parent menu items'})
     @TreeParent()
     parent: Category
 
