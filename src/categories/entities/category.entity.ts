@@ -38,7 +38,7 @@ export class Category extends BaseEntity {
     @Column()
     metaImages: string;
 
-    @ApiProperty({type: () => Menu, isArray: true, description: 'Additional menu items'})
+    @ApiProperty({type: () => Category, isArray: true, description: 'Additional menu items'})
     @TreeChildren()
     children: Category[];
 
