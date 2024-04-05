@@ -1,6 +1,5 @@
 export enum LangEnum {
-    en = "en",
-    ua = "ua",
-    ru = "ru"
-
+  en = 'en',
+  ua = 'ua',
+  ru = 'ru',
 }

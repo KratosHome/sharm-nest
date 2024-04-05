@@ -1,7 +1,9 @@
 # API Documentation
-http://localhost:3000/documents
+
+http://localhost:8080/documents
 
 # env
+
 JWT_SECRET="123456"
 
 DB_HOST=""
