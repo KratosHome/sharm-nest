@@ -11,6 +11,9 @@ import { ProductsModule } from './products/products.module';
 import { MenuModule } from './menu/menu.module';
 
 import * as fs from 'fs';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { IsUniqueInterceptor } from './helpers/interceptors/is-unique-interceptor';
+import { EnumInterceptor } from './helpers/interceptors/unum.error.interceptor';
 
 @Module({
   imports: [
@@ -26,10 +29,10 @@ import * as fs from 'fs';
         database: configService.get('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true,
-        ssl: {
-          rejectUnauthorized: false,
-          ca: fs.readFileSync('./eu-west-2-bundle.p7b').toString(),
-        },
+        // ssl: {
+        //   rejectUnauthorized: false,
+        //   ca: fs.readFileSync('./eu-west-2-bundle.p7b').toString(),
+        // },
       }),
       inject: [ConfigService],
     }),
@@ -41,6 +44,10 @@ import * as fs from 'fs';
     MenuModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_INTERCEPTOR, useClass: IsUniqueInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: EnumInterceptor },
+  ],
 })
 export class AppModule {}

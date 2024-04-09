@@ -25,7 +25,6 @@ export class MenuController {
 
     @Post('')
     @UsePipes(new ValidationPipe())
-    @UseInterceptors(ErrorsInterceptor)
     // @SetMetadata('roles', ['admin', 'manager'])
     @ApiOperation({summary: 'create menu', description: 'you must create all languages. role: admin, manager'})
     @ApiResponse({status: 200, description: 'Element update', type: CreateMenuDto})
