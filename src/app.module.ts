@@ -31,10 +31,10 @@ import { EnumInterceptor } from './helpers/interceptors/enum.error.interceptor';
         database: configService.get('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true,
-        // ssl: {
-        //   rejectUnauthorized: false,
-        //   ca: fs.readFileSync('./eu-west-2-bundle.p7b').toString(),
-        // },
+        ssl: {
+          rejectUnauthorized: false,
+          ca: fs.readFileSync('./eu-west-2-bundle.p7b').toString(),
+        },
       }),
       inject: [ConfigService],
     }),
