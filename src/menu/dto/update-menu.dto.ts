@@ -1,6 +1,12 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateMenuDto } from './create-menu.dto';
-import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 class UpdateMenuTranslationDto {
   @IsNotEmpty()
@@ -37,6 +43,5 @@ export class UpdateMenuDto {
       },
     ],
   })
-  @IsOptional()
   translations: UpdateMenuTranslationDto[];
 }

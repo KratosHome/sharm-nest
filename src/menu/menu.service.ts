@@ -1,113 +1,140 @@
-import {Injectable, NotFoundException} from '@nestjs/common';
-import {UpdateMenuDto} from './dto/update-menu.dto';
-import {InjectRepository} from "@nestjs/typeorm";
-import {Menu} from "./entities/menu.entity";
-import {Repository} from "typeorm";
-import {CreateMenuDto} from "./dto/create-menu.dto";
-import {MenuTranslationEntity} from "./entities/menu-translation.entity";
-import {filterTranslationsByLang} from "../helpers/filterTranslationsByLang";
-import {In} from 'typeorm';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { UpdateMenuDto } from './dto/update-menu.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Menu } from './entities/menu.entity';
+import { IsNull, Repository } from 'typeorm';
+import { CreateMenuDto } from './dto/create-menu.dto';
+import { MenuTranslationEntity } from './entities/menu-translation.entity';
+import { filterTranslationsByLang } from '../helpers/filterTranslationsByLang';
+import { In } from 'typeorm';
 
 @Injectable()
 export class MenuService {
-    constructor(
-        @InjectRepository(Menu) private menuRepository: Repository<Menu>,
-        @InjectRepository(MenuTranslationEntity) private menuTranslationRepository: Repository<MenuTranslationEntity>,
-        //  private readonly jwtService: JwtService,
-    ) {
-    }
+  constructor(
+    @InjectRepository(Menu) private menuRepository: Repository<Menu>,
+    @InjectRepository(MenuTranslationEntity)
+    private menuTranslationRepository: Repository<MenuTranslationEntity>,
+    //  private readonly jwtService: JwtService,
+  ) {}
 
-    async create(createMenuDto: CreateMenuDto): Promise<Menu> {
-        const menu = this.menuRepository.create({
-            icons: createMenuDto.icons,
+  async create(createMenuDto: CreateMenuDto): Promise<Menu> {
+    const parentMenu = await this.menuRepository.findOne({
+      where: { parent: { id: null } },
+    });
+
+    if (parentMenu && !createMenuDto.parentId) {
+      throw new ConflictException('There must be only one parent menu');
+    }
+    const translations = await Promise.all(
+      createMenuDto.translations.map(async (translationData) => {
+        const translation = this.menuTranslationRepository.create({
+          ...translationData,
         });
+        return await this.menuTranslationRepository.save(translation);
+      }),
+    );
 
-        if (createMenuDto.parentId) menu.parent = await this.menuRepository.findOne({where: {id: createMenuDto.parentId}});
+    const menu = this.menuRepository.create({
+      icons: createMenuDto.icons,
+    });
 
-        const savedMenu = await this.menuRepository.save(menu);
+    if (createMenuDto.parentId)
+      menu.parent = await this.menuRepository.findOneOrFail({
+        where: { id: createMenuDto.parentId },
+      });
 
-        for (const translationData of createMenuDto.translations) {
-            const translation = this.menuTranslationRepository.create({
-                ...translationData,
-                menu: savedMenu
-            });
-            await this.menuTranslationRepository.save(translation);
-        }
+    menu.translations = translations;
+    const savedMenu = await this.menuRepository.save(menu);
 
-        return menu
-    }
+    return savedMenu;
+  }
 
-    async updateItem(lang: string, id: string, updateMenuDto: UpdateMenuDto): Promise<Menu> {
-        let menu = await this.menuRepository.findOne({
-            where: {id},
-            relations: ['translations']
-        });
+  async updateItem(
+    lang: string,
+    id: string,
+    updateMenuDto: UpdateMenuDto,
+  ): Promise<Menu> {
+    let menu = await this.menuRepository.findOne({
+      where: { id },
+      relations: ['translations'],
+    });
 
-        if (!menu) throw new NotFoundException(`Menu item with ID ${id} not found`);
-        const {translations, ...newData} = updateMenuDto;
-        menu = this.menuRepository.merge(menu, newData);
+    if (!menu) throw new NotFoundException(`Menu item with ID ${id} not found`);
+    const { translations, ...newData } = updateMenuDto;
+    menu = this.menuRepository.merge(menu, newData);
 
-        const translationIndex = menu.translations.findIndex(t => t.lang === lang);
+    const translationIndex = menu.translations.findIndex(
+      (t) => t.lang === lang,
+    );
 
-        if (translationIndex === -1) throw new Error('Translation not found');
+    if (translationIndex === -1) throw new Error('Translation not found');
 
-        const translation = this.menuTranslationRepository.merge(menu.translations[translationIndex], ...updateMenuDto.translations);
+    const translation = this.menuTranslationRepository.merge(
+      menu.translations[translationIndex],
+      ...updateMenuDto.translations,
+    );
 
-        await this.menuTranslationRepository.save(translation);
-        await this.menuRepository.save(menu);
+    await this.menuTranslationRepository.save(translation);
+    await this.menuRepository.save(menu);
 
-        return menu;
-    }
+    return menu;
+  }
 
-    async findAll(lang: string): Promise<Menu[]> {
-        const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
-        const menus: any = await treeRepository.findTrees({
-            relations: ["translations", "children"]
-        });
+  async findAll(lang: string): Promise<Menu[]> {
+    const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
+    const menus: any = await treeRepository.findTrees({
+      relations: ['translations', 'children'],
+    });
 
-        menus.forEach((menu: Menu) => filterTranslationsByLang(menu, lang));
+    menus.forEach((menu: Menu) => filterTranslationsByLang(menu, lang));
 
-        return menus;
-    }
+    return menus;
+  }
 
-    async findOne(lang: string, id: string): Promise<Menu> {
-        const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
-        const menu = await this.menuRepository.findOne({where: {id}, relations: ["translations", "children"]});
-        if (!menu) throw new Error('Menu not found');
-        filterTranslationsByLang(menu, lang);
+  async findOne(lang: string, id: string): Promise<Menu> {
+    const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
+    const menu = await this.menuRepository.findOne({
+      where: { id },
+      relations: ['translations', 'children'],
+    });
+    if (!menu) throw new Error('Menu not found');
+    filterTranslationsByLang(menu, lang);
 
-        return treeRepository.findDescendantsTree(menu);
-    }
+    return treeRepository.findDescendantsTree(menu);
+  }
 
+  async moveItem(nodeId: string, parentId: string) {
+    const node = await this.menuRepository.findOne({ where: { id: nodeId } });
+    if (!node) throw new Error('Cannot find node to move');
+    const newParent = await this.menuRepository.findOne({
+      where: { id: parentId },
+    });
+    if (!newParent) throw new Error('Cannot find new parent node');
 
-    async moveItem(nodeId: string, parentId: string) {
-        const node = await this.menuRepository.findOne({where: {id: nodeId}});
-        if (!node) throw new Error('Cannot find node to move');
-        const newParent = await this.menuRepository.findOne({where: {id: parentId}});
-        if (!newParent) throw new Error('Cannot find new parent node');
+    node.parent = newParent;
 
-        node.parent = newParent;
+    await this.menuRepository.save(node);
 
-        await this.menuRepository.save(node);
+    return node;
+  }
 
-        return node;
-    }
+  async remove(id: string): Promise<boolean> {
+    const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
+    const target = await this.menuRepository.findOne({ where: { id } });
+    if (!target) throw new NotFoundException(`Menu with ID ${id} not found`);
 
+    const descendants = await treeRepository.findDescendants(target);
 
-    async remove(id: string): Promise<boolean> {
-        const treeRepository = this.menuRepository.manager.getTreeRepository(Menu);
-        const target = await this.menuRepository.findOne({where: {id}});
-        if (!target) throw new NotFoundException(`Menu with ID ${id} not found`);
+    await this.menuTranslationRepository.delete({
+      menu: In(descendants.map((d) => d.id)),
+    });
 
-        const descendants = await treeRepository.findDescendants(target);
+    await treeRepository.remove(descendants);
 
-        await this.menuTranslationRepository.delete({
-            menu: In(descendants.map(d => d.id))
-        });
-
-        await treeRepository.remove(descendants);
-
-        return true;
-    }
-
+    return true;
+  }
 }
