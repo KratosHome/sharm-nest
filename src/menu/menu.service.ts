@@ -1,8 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UpdateMenuDto } from './dto/update-menu.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Menu } from './entities/menu.entity';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { MenuTranslationEntity } from './entities/menu-translation.entity';
 import { filterTranslationsByLang } from '../helpers/filterTranslationsByLang';
@@ -18,26 +22,35 @@ export class MenuService {
   ) {}
 
   async create(createMenuDto: CreateMenuDto): Promise<Menu> {
+    const parentMenu = await this.menuRepository.findOne({
+      where: { parent: { id: null } },
+    });
+
+    if (parentMenu && !createMenuDto.parentId) {
+      throw new ConflictException('There must be only one parent menu');
+    }
+    const translations = await Promise.all(
+      createMenuDto.translations.map(async (translationData) => {
+        const translation = this.menuTranslationRepository.create({
+          ...translationData,
+        });
+        return await this.menuTranslationRepository.save(translation);
+      }),
+    );
+
     const menu = this.menuRepository.create({
       icons: createMenuDto.icons,
     });
 
     if (createMenuDto.parentId)
-      menu.parent = await this.menuRepository.findOne({
+      menu.parent = await this.menuRepository.findOneOrFail({
         where: { id: createMenuDto.parentId },
       });
 
+    menu.translations = translations;
     const savedMenu = await this.menuRepository.save(menu);
 
-    for (const translationData of createMenuDto.translations) {
-      const translation = this.menuTranslationRepository.create({
-        ...translationData,
-        menu: savedMenu,
-      });
-      await this.menuTranslationRepository.save(translation);
-    }
-
-    return menu;
+    return savedMenu;
   }
 
   async updateItem(

@@ -14,7 +14,6 @@ export class IsUniqueInterceptor implements NestInterceptor {
     return next.handle().pipe(
       catchError((error) => {
         if (error.code === '23505') {
-          console.log('error', error);
           const fieldName = error.detail.split(' ')[1].split('=')[0];
           const normalFieldName = fieldName.slice(1, fieldName.length - 1);
 

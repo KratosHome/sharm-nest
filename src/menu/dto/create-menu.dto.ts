@@ -1,6 +1,6 @@
 // Додайте цей клас для опису структури перекладу
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 class CreateMenuTranslationDto {
   @IsNotEmpty()
@@ -42,6 +42,7 @@ export class CreateMenuDto {
       },
     ],
   })
-  @IsOptional()
+  @IsNotEmpty()
+  @IsArray()
   translations: CreateMenuTranslationDto[];
 }
