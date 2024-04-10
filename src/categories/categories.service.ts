@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Repository } from 'typeorm';
@@ -17,26 +21,35 @@ export class CategoriesService {
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
+    const parentCategory = await this.categoryRepository.findOne({
+      where: { parent: { id: null } },
+    });
+
+    if (parentCategory && !createCategoryDto.parentId) {
+      throw new ConflictException('There must be only one parent category');
+    }
     const category = this.categoryRepository.create({
       metaImages: createCategoryDto.metaImages,
     });
 
     if (createCategoryDto.parentId)
-      category.parent = await this.categoryRepository.findOne({
+      category.parent = await this.categoryRepository.findOneOrFail({
         where: { id: createCategoryDto.parentId },
       });
 
+    const translations = await Promise.all(
+      createCategoryDto.translations.map(async (translationData) => {
+        const translation = this.categoryTranslationRepository.create({
+          ...translationData,
+        });
+        return await this.categoryTranslationRepository.save(translation);
+      }),
+    );
+
+    category.translations = translations;
+
     const savedCategory = await this.categoryRepository.save(category);
-
-    for (const translationData of createCategoryDto.translations) {
-      const translation = this.categoryTranslationRepository.create({
-        ...translationData,
-        category: savedCategory,
-      });
-      await this.categoryTranslationRepository.save(translation);
-    }
-
-    return category;
+    return savedCategory;
   }
 
   async updateItem(

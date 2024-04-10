@@ -29,14 +29,6 @@ export class MenuService {
     if (parentMenu && !createMenuDto.parentId) {
       throw new ConflictException('There must be only one parent menu');
     }
-    const translations = await Promise.all(
-      createMenuDto.translations.map(async (translationData) => {
-        const translation = this.menuTranslationRepository.create({
-          ...translationData,
-        });
-        return await this.menuTranslationRepository.save(translation);
-      }),
-    );
 
     const menu = this.menuRepository.create({
       icons: createMenuDto.icons,
@@ -46,6 +38,15 @@ export class MenuService {
       menu.parent = await this.menuRepository.findOneOrFail({
         where: { id: createMenuDto.parentId },
       });
+
+    const translations = await Promise.all(
+      createMenuDto.translations.map(async (translationData) => {
+        const translation = this.menuTranslationRepository.create({
+          ...translationData,
+        });
+        return await this.menuTranslationRepository.save(translation);
+      }),
+    );
 
     menu.translations = translations;
     const savedMenu = await this.menuRepository.save(menu);
