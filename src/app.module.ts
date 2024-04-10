@@ -10,7 +10,6 @@ import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { MenuModule } from './menu/menu.module';
 
-import * as fs from 'fs';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { IsUniqueInterceptor } from './helpers/interceptors/is-unique-interceptor';
 
