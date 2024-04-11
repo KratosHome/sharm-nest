@@ -22,33 +22,26 @@ export class ProductsService {
 
   async create(createProductDto: CreateProductDto): Promise<any> {
     const { translations, items, ...newData } = createProductDto;
+
+    const newTranslations = await Promise.all(
+      translations.map((translationData) =>
+        this.productTranslationRepository.create(translationData),
+      ),
+    );
+
+    const newItems = await Promise.all(
+      items.map((itemData) => this.productItemsRepository.create(itemData)),
+    );
+
     const product = this.productRepository.create(newData);
+
+    product.items = newItems;
+    product.translations = newTranslations;
+
     const savedProduct = await this.productRepository.save(product);
 
-    const savedTranslations = await Promise.all(
-      translations.map((translationData) => {
-        const translation = this.productTranslationRepository.create({
-          ...translationData,
-          product: savedProduct,
-        });
-        return this.productTranslationRepository.save(translation);
-      }),
-    );
-
-    const savedItems = await Promise.all(
-      items.map((itemData) => {
-        const item = this.productItemsRepository.create({
-          ...itemData,
-          product: savedProduct,
-        });
-        return this.productItemsRepository.save(item);
-      }),
-    );
-
     return {
-      ...product,
-      items: savedItems,
-      translations: savedTranslations,
+      savedProduct,
     };
   }
 

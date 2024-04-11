@@ -24,7 +24,6 @@ export class ProductsController {
 
   @Post('')
   @UsePipes(new ValidationPipe())
-  @UseInterceptors(ErrorsInterceptor)
   // @SetMetadata('roles', ['admin', 'manager'])
   @ApiOperation({
     summary: 'create product',
